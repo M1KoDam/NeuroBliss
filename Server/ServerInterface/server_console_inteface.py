@@ -78,7 +78,7 @@ Verbose: {self.server_app.VERBOSE_INFO_OUTPUT}""")
         except ValueError:
             print("Invalid seconds input")
             return
-        self.server_app.generate_music_by_phrase([input_phrase], input_seconds)
+        self.server_app.generate_music_by_phrase(None, [input_phrase], input_seconds)
 
     def get_user_by_enter_id(self):
         self.server_app.users_rep.get_user_by_id(input(">>> Enter user id: "))

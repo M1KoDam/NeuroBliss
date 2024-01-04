@@ -29,7 +29,7 @@ def authorization(user: UserInformation):
 
 # {"Angry": True, "Romantic": False, "Happy": False, "Sad": True, "Dark": True, "Dreamy": False, "Sentimental": False, "Mysterious": False}
 
-@router.get('/get_music/{music_info}', response_model=MusicTransfer)
+@router.get('/get_music', response_model=MusicTransfer)
 def get_music(user_get_music: UserGetMusic):
     return {'status': 'OK'}
 
