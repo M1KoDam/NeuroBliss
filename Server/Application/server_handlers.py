@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from datetime import datetime
 from Server.Domain.user import User
-from Server.Application.__init__ import users_rep
+from Server.Application.__init__ import get_users_repository
 
 router = APIRouter()
+users_rep = get_users_repository()
 
 
 class MusicTransfer(BaseModel):

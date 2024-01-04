@@ -2,11 +2,7 @@ import uvicorn
 from server_settings import settings
 from server_api import ServerAPI
 import threading
-# from __init__ import console
-
-
-server_application = ServerAPI()
-server_API = server_application.get_application()
+from __init__ import get_console
 
 
 def start_server():
@@ -17,8 +13,8 @@ def start_server():
     )
 
 
-thread = threading.Thread(target=start_server)
-thread.start()
+server_application = ServerAPI()
+server_API = server_application.get_application()
+threading.Thread(target=start_server).start()
 
-
-# console.show_main_menu()
+get_console().show_main_menu()

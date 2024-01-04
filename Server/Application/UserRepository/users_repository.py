@@ -27,7 +27,8 @@ class UsersRepository:
         return self.cache.try_get(user_id)
 
     def delete_user_by_id(self, user_id):
-        self.cache.remove(user_id).write_to_json()
+        if self.cache.try_get(user_id):
+            self.cache.remove(user_id).write_to_json()
 
     def clear(self):
         self.cache.clear().write_to_json()

@@ -16,8 +16,9 @@ class MusicRepository:
         return self.cache.try_get(music_id)
 
     def delete_music_by_id(self, music_id):
-        self.cache.remove(music_id).write_to_json()
-        os.remove(os.path.join(self.data_path, os.path.join(self.data_path, f"{music_id}.wav")))
+        if self.cache.try_get(music_id):
+            self.cache.remove(music_id).write_to_json()
+            os.remove(os.path.join(self.data_path, os.path.join(self.data_path, f"{music_id}.wav")))
 
     def clear(self):
         self.cache.clear().write_to_json()
