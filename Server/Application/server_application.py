@@ -1,26 +1,20 @@
 import threading
 from Server.Application.MusicRepository.music_repository import MusicRepository
-from Server.Application.UserRepository.users_repository import UsersRepository
-from Server.Application.Models.musicgenmodel import MusicGenModel, ML_DICT
+from Server.Application.Models.musicgenmodel import MusicGenModel
 from Server.Domain.music_item import MusicItem, Status
 from Server.Application.Models.model_levels import ModelLevel
 from Server.Domain.user import User
 import torch
 import uuid
 
-MUSIC_DATA_PATH = "../Application/MusicRepository/Data/"
-MUSIC_CACHE_PATH = "../Application/MusicRepository/Cache/"
-USERS_CACHE_PATH = "../Application/UserRepository/Cache/"
-USERS_PASSWORDS_PATH = "../Application/UserRepository/Passwords/"
-
 
 class ServerApplication:
-    def __init__(self):
+    def __init__(self, music_rep: MusicRepository):
         self.default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         torch.set_default_device(self.default_device)
 
-        self.music_rep = MusicRepository(cache_path=MUSIC_CACHE_PATH, data_path=MUSIC_DATA_PATH)
-        self.users_rep = UsersRepository(cache_path=USERS_CACHE_PATH, passwords_path=USERS_PASSWORDS_PATH)
+        self.music_rep = music_rep
+
         self.model = MusicGenModel(ModelLevel.small_model)
 
         self.SERVER_AVAILABLE = False
@@ -58,7 +52,7 @@ class ServerApplication:
         # "Eternal Harmony" is a captivating pop/rock anthem by Neon Dreams that combines vibrant instrumentals, powerful vocals, and an uplifting message of hope and unity.
         # an epic heavy rock song with blistering guitar, thunderous drums, fantasy-styled, fast temp with smooth end
         # Aggressive hard rock instrumental song with heavy drums, electric guitar
-        music_item = MusicItem(str(uuid.uuid4()), MUSIC_DATA_PATH, params, length_in_seconds)
+        music_item = MusicItem(str(uuid.uuid4()), self.music_rep.data_path, params, length_in_seconds)
         if user is not None:
             self.queue.append((user, music_item))
 

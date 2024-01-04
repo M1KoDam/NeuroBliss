@@ -1,7 +1,7 @@
 from Server.Application.Models.musicgenmodel import ML_DICT
 from Server.Application.Models.model_levels import ModelLevel
 from Server.Application.server_application import ServerApplication
-from server_menus import ServerMenu
+from Server.ServerInterface.server_menus import ServerMenu
 
 
 def confirm_action(action):
@@ -28,8 +28,10 @@ def generate_menu(text_func, options: list, options_args: list[tuple]):
 
 
 class ServerConsoleInterface:
-    def __init__(self):
-        self.server_app = ServerApplication()
+    def __init__(self, music_rep, users_rep):
+        self.music_rep = music_rep
+        self.users_rep = users_rep
+        self.server_app = ServerApplication(music_rep)
         self._CONSOLE_RUNNING = True
 
     def up_server(self):
@@ -81,25 +83,25 @@ Verbose: {self.server_app.VERBOSE_INFO_OUTPUT}""")
         self.server_app.generate_music_by_phrase(None, [input_phrase], input_seconds)
 
     def get_user_by_enter_id(self):
-        self.server_app.users_rep.get_user_by_id(input(">>> Enter user id: "))
+        self.users_rep.get_user_by_id(input(">>> Enter user id: "))
 
     def delete_user_by_enter_id(self):
-        self.server_app.users_rep.delete_user_by_id(input(">>> Enter user id: "))
+        self.users_rep.delete_user_by_id(input(">>> Enter user id: "))
 
     def clear_users(self):
         if confirm_action("delete all users"):
-            self.server_app.users_rep.clear()
+            self.users_rep.clear()
             print("Users has been deleted successfully")
 
     def get_music_by_enter_id(self):
-        self.server_app.music_rep.get_music_by_id(input(">>> Enter music id: "))
+        self.music_rep.get_music_by_id(input(">>> Enter music id: "))
 
     def delete_music_by_enter_id(self):
-        self.server_app.music_rep.delete_music_by_id(input(">>> Enter music id: "))
+        self.music_rep.delete_music_by_id(input(">>> Enter music id: "))
 
     def clear_music(self):
         if confirm_action("delete all music"):
-            self.server_app.music_rep.clear()
+            self.music_rep.clear()
             print("Music has been deleted successfully")
 
     def get_options_menu(self):
@@ -130,8 +132,3 @@ Info output:
                           ("cpu",), ("cuda",), ()
                       ]
                       )
-
-
-if __name__ == "__main__":
-    console = ServerConsoleInterface()
-    console.show_main_menu()

@@ -5,8 +5,8 @@ from Server.Domain.music_item import MusicItem
 
 class MusicRepository:
     def __init__(self, cache_path, data_path):
-        self._cache_path = cache_path
-        self._data_path = data_path
+        self.cache_path = cache_path
+        self.data_path = data_path
         self.cache = Cache(cache_path + "music.json", True).set_json_handlers(decrypt_music_item, cache_music_item)
 
     def add_music(self, music_item: MusicItem):
@@ -17,12 +17,12 @@ class MusicRepository:
 
     def delete_music_by_id(self, music_id):
         self.cache.remove(music_id).write_to_json()
-        os.remove(os.path.join(self._data_path, os.path.join(self._data_path, f"{music_id}.wav")))
+        os.remove(os.path.join(self.data_path, os.path.join(self.data_path, f"{music_id}.wav")))
 
     def clear(self):
         self.cache.clear().write_to_json()
-        for file in os.listdir(self._data_path):
-            os.remove(os.path.join(self._data_path, file))
+        for file in os.listdir(self.data_path):
+            os.remove(os.path.join(self.data_path, file))
 
 
 def cache_music_item(obj):
