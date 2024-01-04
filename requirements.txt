@@ -1,0 +1,6 @@
+fastapi~=0.108.0
+pydantic~=2.5.2
+uvicorn~=0.25.0
+SQLAlchemy~=2.0.24
+starlette~=0.32.0.post1
+python-dotenv
