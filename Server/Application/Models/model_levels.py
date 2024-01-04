@@ -3,13 +3,11 @@ class Level:
 
 
 class Small(Level):
-    def __str__(self):
-        return "small"
+    pass
 
 
 class Medium(Level):
-    def __str__(self):
-        return "medium"
+    pass
 
 
 class ModelLevel:
