@@ -16,10 +16,11 @@ class UsersRepository:
 
     def register_user(self, login: str, password: str):
         new_user = self.passwords.try_get((login, password))
-        if not new_user:
-            new_user = User(str(uuid.uuid4()))
-            self.passwords.add((login, password), new_user)
-            self.cache.add(new_user.user_id, new_user)
+        if new_user:
+            return None
+        new_user = User(str(uuid.uuid4()))
+        self.passwords.add((login, password), new_user)
+        self.cache.add(new_user.user_id, new_user)
         return new_user
 
     def get_user_by_id(self, user_id):
