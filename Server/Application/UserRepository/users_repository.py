@@ -44,7 +44,7 @@ def cache_user(obj):
     if isinstance(obj, User):
         return {
             "__type__": "user",
-            "isoformat": [obj.user_id, obj.playlists]
+            "isoformat": [obj.user_id, obj.liked, obj.playlists]
         }
     return None
 
