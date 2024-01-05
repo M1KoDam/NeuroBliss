@@ -14,11 +14,11 @@ class ServerApplication:
     def __init__(self, music_rep: MusicRepository):
         if self.__initialized:
             return
-
         self.__initialized = True
-        print("INIT")
+
+        print("INIT APP")
         self.default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        # torch.set_default_device(self.default_device)
+        torch.set_default_device(self.default_device)
 
         self.music_rep = music_rep
 
@@ -41,6 +41,7 @@ class ServerApplication:
             self.model.generate(music_item, verbose=self._VERBOSE_INFO_OUTPUT).save(verbose=self._VERBOSE_INFO_OUTPUT)
         except Exception as e:
             print("Generation failed with exception:\n{}".format(e))
+            raise e
         else:
             self.music_rep.add_music(music_item)
 
@@ -49,9 +50,8 @@ class ServerApplication:
         # "Eternal Harmony" is a captivating pop/rock anthem by Neon Dreams that combines vibrant instrumentals, powerful vocals, and an uplifting message of hope and unity.
         # an epic heavy rock song with blistering guitar, thunderous drums, fantasy-styled, fast temp with smooth end
         # Aggressive hard rock instrumental song with heavy drums, electric guitar
+
         music_item = MusicItem(str(uuid.uuid4()), self.music_rep.data_path, params, length_in_seconds)
-        # if user is not None:
-        #     self.queue.append((user, music_item))
         if self.default_device.__str__() == "cpu":
             thread = threading.Thread(target=self._generate_music,
                                       kwargs={'music_item': music_item})

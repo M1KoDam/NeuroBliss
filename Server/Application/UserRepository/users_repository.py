@@ -4,7 +4,14 @@ import uuid
 
 
 class UsersRepository:
+    __instance = None
+
     def __init__(self, cache_path, passwords_path):
+        if self.__initialized:
+            return
+        self.__initialized = True
+
+        print("INIT UsersRepository")
         self._cache_path = cache_path
         self._passwords_path = passwords_path
 
@@ -38,6 +45,12 @@ class UsersRepository:
     def clear(self):
         self.cache.clear().write_to_json()
         self.passwords.clear().write_to_json()
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            cls.__instance = super().__new__(cls)
+            cls.__instance.__initialized = False
+        return cls.__instance
 
 
 def cache_user(obj):

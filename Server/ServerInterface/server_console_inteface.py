@@ -27,7 +27,14 @@ def generate_menu(text_func, options: list, options_args: list[tuple]):
 
 
 class ServerConsoleInterface:
+    __instance = None
+
     def __init__(self, music_rep, users_rep, server_app):
+        if self.__initialized:
+            return
+        self.__initialized = True
+
+        print("INIT ServerConsoleInterface")
         self.music_rep = music_rep
         self.users_rep = users_rep
         self.server_app = server_app
@@ -131,3 +138,9 @@ Info output:
                           ("cpu",), ("cuda",), ()
                       ]
                       )
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            cls.__instance = super().__new__(cls)
+            cls.__instance.__initialized = False
+        return cls.__instance

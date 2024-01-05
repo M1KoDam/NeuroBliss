@@ -4,7 +4,14 @@ from Server.Domain.music_item import MusicItem
 
 
 class MusicRepository:
+    __instance = None
+
     def __init__(self, cache_path, data_path):
+        if self.__initialized:
+            return
+        self.__initialized = True
+
+        print("INIT MusicRepository")
         self.cache_path = cache_path
         self.data_path = data_path
         self.cache = Cache(cache_path + "music.json", True).set_json_handlers(decrypt_music_item, cache_music_item)
@@ -24,6 +31,12 @@ class MusicRepository:
         self.cache.clear().write_to_json()
         for file in os.listdir(self.data_path):
             os.remove(os.path.join(self.data_path, file))
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            cls.__instance = super().__new__(cls)
+            cls.__instance.__initialized = False
+        return cls.__instance
 
 
 def cache_music_item(obj):
