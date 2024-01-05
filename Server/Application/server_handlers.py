@@ -44,7 +44,7 @@ def sign_up(user_information: UserInformation):
 @router.post('/auth/sign-in')
 def sign_in(user_information: UserInformation):
     user = users_rep.get_user_by_login_and_password(user_information.login,
-                                                                       user_information.password)
+                                                    user_information.password)
     if not user:
         return {"message": "Login or password is incorrect"}
     return {"message": "Successfully logged in", "id": user.user_id}
