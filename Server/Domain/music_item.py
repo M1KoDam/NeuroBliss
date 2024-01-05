@@ -13,3 +13,12 @@ class MusicItem:
         self.params = params
         self.length_in_seconds = length_in_seconds
         self.status = status
+
+    def change_path(self, new_path):
+        self.path = new_path
+        return self
+
+    def copy(self):
+        return MusicItem(self.id, self.path, self.params, self.length_in_seconds, self.status)
+
+

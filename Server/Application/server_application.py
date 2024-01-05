@@ -47,7 +47,7 @@ class ServerApplication:
         else:
             self.music_rep.add_music(music_item)
 
-    def generate_music_by_phrase(self, user: User | None, params: list[str], length_in_seconds: int):
+    def generate_music_by_phrase(self, user: User | None, params: list[str], length_in_seconds: int) -> MusicItem:
         # 90s rock song with loud guitars and heavy drums
         # "Eternal Harmony" is a captivating pop/rock anthem by Neon Dreams that combines vibrant instrumentals, powerful vocals, and an uplifting message of hope and unity.
         # an epic heavy rock song with blistering guitar, thunderous drums, fantasy-styled, fast temp with smooth end
@@ -63,9 +63,7 @@ class ServerApplication:
             self._tasks.append(thread)
         else:
             self._generate_music(music_item)
-
-    def create_user(self):
-        pass
+        return music_item
 
     def change_device(self, new_device: str):
         """Set new device, for example cuda or cpu"""
