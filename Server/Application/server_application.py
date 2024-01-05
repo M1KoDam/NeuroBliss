@@ -9,9 +9,16 @@ import uuid
 
 
 class ServerApplication:
+    __instance = None
+
     def __init__(self, music_rep: MusicRepository):
+        if self.__initialized:
+            return
+
+        self.__initialized = True
+        print("INIT")
         self.default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        torch.set_default_device(self.default_device)
+        # torch.set_default_device(self.default_device)
 
         self.music_rep = music_rep
 
@@ -25,19 +32,9 @@ class ServerApplication:
         self._tasks: list[threading.Thread] = []
         self._tasks_queue: list[threading.Thread] = []
 
-        self.queue: list[(User, MusicItem)] = []
-
     @property
     def VERBOSE_INFO_OUTPUT(self):
         return self._VERBOSE_INFO_OUTPUT
-
-    def try_take_user_from_queue(self):
-        if len(self.queue) == 0:
-            return None
-
-        if self.queue[0][1].status is Status.DONE:
-            return self.queue.pop(0)
-        return None
 
     def _generate_music(self, music_item: MusicItem):
         try:
@@ -53,9 +50,8 @@ class ServerApplication:
         # an epic heavy rock song with blistering guitar, thunderous drums, fantasy-styled, fast temp with smooth end
         # Aggressive hard rock instrumental song with heavy drums, electric guitar
         music_item = MusicItem(str(uuid.uuid4()), self.music_rep.data_path, params, length_in_seconds)
-        if user is not None:
-            self.queue.append((user, music_item))
-
+        # if user is not None:
+        #     self.queue.append((user, music_item))
         if self.default_device.__str__() == "cpu":
             thread = threading.Thread(target=self._generate_music,
                                       kwargs={'music_item': music_item})
@@ -90,3 +86,9 @@ class ServerApplication:
         for task in self._tasks:
             task.join()
         self._tasks.clear()
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            cls.__instance = super().__new__(cls)
+            cls.__instance.__initialized = False
+        return cls.__instance

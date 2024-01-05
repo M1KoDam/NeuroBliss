@@ -17,5 +17,4 @@ server_application = ServerAPI()
 server_API = server_application.get_application()
 threading.Thread(target=start_server).start()
 
-console = get_console()
-console.show_main_menu()
+get_console().show_main_menu()

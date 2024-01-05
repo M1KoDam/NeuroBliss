@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends
+from datetime import datetime
+from fastapi import APIRouter
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from datetime import datetime
-from Server.Domain.user import User
+from Server.Application.__init__ import get_server_application
 from Server.Application.__init__ import get_users_repository
-from Server.Application.__main__ import console
 from Server.Domain.music_item import Status
 
 router = APIRouter()
@@ -26,21 +25,24 @@ class UserInformation(BaseModel):
 class UserGetMusic(BaseModel):
     user_id: int
     style_music: list
-    music_length: int = 5   # ["angry","dark"]
+    music_length: int = 5  # ["angry","dark"]
 
 
 # {"Angry": True, "Romantic": False, "Happy": False, "Sad": True, "Dark": True, "Dreamy": False, "Sentimental": False, "Mysterious": False}
 
 @router.post('/get_music', response_model=MusicTransfer)
 async def get_music(user_get_music: UserGetMusic):
-    music_item = console.server_app.generate_music_by_phrase(None, user_get_music.style_music, user_get_music.music_length)
-    file_path = music_item.path + music_item.id
+    music_item = get_server_application().generate_music_by_phrase(None, user_get_music.style_music,
+                                                                   user_get_music.music_length)
+    file_path = music_item.path + music_item.id + ".wav"
     while music_item.status != Status.DONE:
         pass
     print("has been generated")
     user_music_item = music_item.copy().change_path("../Application/GettingExamples/")  # добавить path
-
-    return FileResponse(file_path, file_path=user_music_item.id, headers=user_music_item.dict())
+    return FileResponse(file_path, filename=user_music_item.id, headers={"id": f"{user_music_item.id}",
+                                                                         "user_music_path": f"{user_music_item.path}",
+                                                                         "music_length": f"{user_music_item.length_in_seconds}",
+                                                                         })
 
 
 @router.post('/auth/sign-up')

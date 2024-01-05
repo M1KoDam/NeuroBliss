@@ -1,6 +1,5 @@
-from Server.Application.Models.musicgenmodel import ML_DICT
 from Server.Application.Models.model_levels import ModelLevel
-from Server.Application.server_application import ServerApplication
+from Server.Application.Models.musicgenmodel import ML_DICT
 from Server.ServerInterface.server_menus import ServerMenu
 
 
@@ -28,10 +27,10 @@ def generate_menu(text_func, options: list, options_args: list[tuple]):
 
 
 class ServerConsoleInterface:
-    def __init__(self, music_rep, users_rep):
+    def __init__(self, music_rep, users_rep, server_app):
         self.music_rep = music_rep
         self.users_rep = users_rep
-        self.server_app = ServerApplication(music_rep)
+        self.server_app = server_app
         self._CONSOLE_RUNNING = True
 
     def up_server(self):

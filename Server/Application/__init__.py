@@ -1,8 +1,16 @@
-
 def get_console():
     from Server.ServerInterface.server_console_inteface import ServerConsoleInterface
 
-    return ServerConsoleInterface(get_music_repository(), get_users_repository())
+    music_rep = get_music_repository()
+    return ServerConsoleInterface(music_rep, get_users_repository(), get_server_application(music_rep))
+
+
+def get_server_application(music_rep=None):
+    from Server.Application.server_application import ServerApplication
+
+    if music_rep is None:
+        music_rep = get_music_repository()
+    return ServerApplication(music_rep)
 
 
 def get_music_repository():
