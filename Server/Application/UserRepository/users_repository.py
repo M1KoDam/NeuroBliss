@@ -12,14 +12,19 @@ class UsersRepository:
         self.cache = Cache(cache_path + "users.json", True).set_json_handlers(decrypt_user, cache_user)
 
     def get_user_by_login_and_password(self, login: str, password: str):
-        return self.passwords.try_get(f"{login} {password}")
+        user_password = self.passwords.try_get(login)
+        if not user_password:
+            return None
+        if password in user_password.keys():
+            return user_password[password]
+        return None
 
     def register_user(self, login: str, password: str):
-        new_user = self.passwords.try_get(f"{login} {password}")
+        new_user = self.passwords.try_get(login)
         if new_user:
             return None
         new_user = User(str(uuid.uuid4()))
-        self.passwords.add(f"{login} {password}", new_user).write_to_json()
+        self.passwords.add(login, {password: new_user}).write_to_json()
         self.cache.add(new_user.user_id, new_user).write_to_json()
         return new_user
 
@@ -32,18 +37,19 @@ class UsersRepository:
 
     def clear(self):
         self.cache.clear().write_to_json()
+        self.passwords.clear().write_to_json()
 
 
 def cache_user(obj):
     if isinstance(obj, User):
         return {
-            "__type__": "musicitem",
-            "isoformat": [obj.user_id]
+            "__type__": "user",
+            "isoformat": [obj.user_id, obj.playlists]
         }
     return None
 
 
 def decrypt_user(obj):
-    if "__type__" in obj and obj["__type__"] == "musicitem":
+    if "__type__" in obj and obj["__type__"] == "user":
         return User(*obj["isoformat"])
     return None
