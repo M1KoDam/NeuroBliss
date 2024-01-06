@@ -5,6 +5,7 @@ from ...constructor.icons import Icon
 from .color_picker import ColorPicker
 from typing import Callable
 import flet as ft
+from Client.Application.client_api import register_user
 
 
 class IconButton(ft.IconButton):
@@ -101,6 +102,13 @@ class UploadButton(ft.ElevatedButton, EventCaller):
             avatar_color = DATA_MANAGER.user.AvatarColor
 
         if self.additive_func is not None:
+            register_item = register_user(login=login, password=password)
+            message = register_item["message"]
+            user_id = None
+            if message:
+                user_id = register_item["id"]
+
+            need_to_close = message
             self.additive_func(need_to_close)
 
         if need_to_close:

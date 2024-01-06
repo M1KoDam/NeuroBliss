@@ -1,9 +1,9 @@
-from gui.resources import colors, fonts, ASSETS_PATH
-from gui.core.data import Singleton
-from gui.core.event import \
+from Client.gui.resources import colors, fonts, ASSETS_PATH
+from Client.gui.core.data import Singleton
+from Client.gui.core.event import \
     EventType, PageState, EventSolver, DATA_MANAGER, \
     DataManager, EVENT_HANDLER
-from gui.constructor.zones import \
+from Client.gui.constructor.zones import \
     TopBar, GenerationArea, PlaylistArea, BottomBar, \
     UserBar, NavigationBar, DefaultArea, SearchArea, SettingsArea, Dialog
 import flet as ft
