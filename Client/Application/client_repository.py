@@ -13,7 +13,7 @@ class ClientRepository:
 
         print("INIT ClientRepository")
         self.data_path = data_path
-        self.data = Cache(data_path + "data.json", True).set_json_handlers(decrypt_music_item, cache_music_item)
+        self.data = Cache(data_path + "data.json", True, decrypt_music_item, cache_music_item)
 
     def add_music(self, music_item: MusicItem):
         self.data.add(music_item.id, music_item).write_to_json()

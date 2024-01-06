@@ -15,8 +15,8 @@ class UsersRepository:
         self._data_path = user_data_path
         self._passwords_path = user_passwords_path
 
-        self.passwords = Cache(user_passwords_path + "passwords.json", True).set_json_handlers(decrypt_user, cache_user)
-        self.data = Cache(user_data_path + "users.json", True).set_json_handlers(decrypt_user, cache_user)
+        self.passwords = Cache(user_passwords_path + "passwords.json", True, decrypt_user, cache_user)
+        self.data = Cache(user_data_path + "users.json", True, decrypt_user, cache_user)
 
     def get_user_by_login_and_password(self, login: str, password: str):
         user_password = self.passwords.try_get(login)
