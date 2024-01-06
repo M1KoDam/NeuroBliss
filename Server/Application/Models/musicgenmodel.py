@@ -1,9 +1,8 @@
 from transformers import AutoProcessor, MusicgenForConditionalGeneration
 import scipy
 from datetime import datetime
-from Server.Domain.music_item import MusicItem, Status
+from Server.Domain.music_item import MusicItem
 from Server.Application.Models.model_levels import ModelLevel
-import torch
 
 ONE_SECOND_PARAM = 51.2
 ML_DICT = {ModelLevel.small_model: "facebook/musicgen-small",
@@ -62,5 +61,5 @@ class _ModelSave:
                                data=self.model.audio_values[0, 0].cpu().numpy())
         if verbose:
             print(f"Saved successfully with id = {self.model.music_item.id}")
-        self.model.music_item.status = Status.DONE
+        self.model.music_item.is_ready = True
         return self.model

@@ -1,7 +1,7 @@
 import threading
 from Server.Application.MusicRepository.music_repository import MusicRepository
 from Server.Application.Models.musicgenmodel import MusicGenModel
-from Server.Domain.music_item import MusicItem, Status
+from Server.Domain.music_item import MusicItem
 from Server.Application.Models.model_levels import ModelLevel
 from Server.Domain.user import User
 import torch

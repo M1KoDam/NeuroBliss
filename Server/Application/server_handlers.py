@@ -4,7 +4,6 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from Server.Application.__init__ import get_server_application
 from Server.Application.__init__ import get_users_repository
-from Server.Domain.music_item import Status
 
 router = APIRouter()
 users_rep = get_users_repository()
@@ -35,7 +34,7 @@ async def get_music(user_get_music: UserGetMusic):
     music_item = get_server_application().generate_music_by_phrase(None, user_get_music.style_music,
                                                                    user_get_music.music_length)
     file_path = music_item.path + music_item.id + ".wav"
-    while music_item.status != Status.DONE:
+    while not music_item.is_ready:
         pass
     print("has been generated")
     user_music_item = music_item.copy().change_path("../Application/GettingExamples/")  # добавить path
