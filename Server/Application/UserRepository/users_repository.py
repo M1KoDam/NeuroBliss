@@ -6,17 +6,17 @@ import uuid
 class UsersRepository:
     __instance = None
 
-    def __init__(self, cache_path, passwords_path):
+    def __init__(self, user_data_path, user_passwords_path):
         if self.__initialized:
             return
         self.__initialized = True
 
         print("INIT UsersRepository")
-        self._cache_path = cache_path
-        self._passwords_path = passwords_path
+        self._data_path = user_data_path
+        self._passwords_path = user_passwords_path
 
-        self.passwords = Cache(passwords_path + "passwords.json", True).set_json_handlers(decrypt_user, cache_user)
-        self.cache = Cache(cache_path + "users.json", True).set_json_handlers(decrypt_user, cache_user)
+        self.passwords = Cache(user_passwords_path + "passwords.json", True).set_json_handlers(decrypt_user, cache_user)
+        self.data = Cache(user_data_path + "users.json", True).set_json_handlers(decrypt_user, cache_user)
 
     def get_user_by_login_and_password(self, login: str, password: str):
         user_password = self.passwords.try_get(login)
@@ -32,18 +32,18 @@ class UsersRepository:
             return None
         new_user = User(str(uuid.uuid4()))
         self.passwords.add(login, {password: new_user}).write_to_json()
-        self.cache.add(new_user.user_id, new_user).write_to_json()
+        self.data.add(new_user.user_id, new_user).write_to_json()
         return new_user
 
     def get_user_by_id(self, user_id):
-        return self.cache.try_get(user_id)
+        return self.data.try_get(user_id)
 
     def delete_user_by_id(self, user_id):
-        if self.cache.try_get(user_id):
-            self.cache.remove(user_id).write_to_json()
+        if self.data.try_get(user_id):
+            self.data.remove(user_id).write_to_json()
 
     def clear(self):
-        self.cache.clear().write_to_json()
+        self.data.clear().write_to_json()
         self.passwords.clear().write_to_json()
 
     def __new__(cls, *args, **kwargs):

@@ -14,15 +14,14 @@ def get_music_repository():
     from Server.Application.MusicRepository.music_repository import MusicRepository
 
     MUSIC_DATA_PATH = "../Application/MusicRepository/Data/"
-    MUSIC_CACHE_PATH = "../Application/MusicRepository/Cache/"
 
-    return MusicRepository(cache_path=MUSIC_CACHE_PATH, data_path=MUSIC_DATA_PATH)
+    return MusicRepository(music_data_path=MUSIC_DATA_PATH)
 
 
 def get_users_repository():
     from Server.Application.UserRepository.users_repository import UsersRepository
 
-    USERS_CACHE_PATH = "../Application/UserRepository/Cache/"
-    USERS_PASSWORDS_PATH = "../Application/UserRepository/Passwords/"
+    JSON_USERS_CACHE_PATH = "../Application/UserRepository/Data/"
+    JSON_USERS_PASSWORDS_PATH = "../Application/UserRepository/Passwords/"
 
-    return UsersRepository(cache_path=USERS_CACHE_PATH, passwords_path=USERS_PASSWORDS_PATH)
+    return UsersRepository(user_data_path=JSON_USERS_CACHE_PATH, user_passwords_path=JSON_USERS_PASSWORDS_PATH)

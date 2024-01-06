@@ -18,7 +18,7 @@ class ServerApplication:
 
         print("INIT APP")
         self.default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        torch.set_default_device(self.default_device)
+        # torch.set_default_device(self.default_device)
 
         self.music_rep = music_rep
 

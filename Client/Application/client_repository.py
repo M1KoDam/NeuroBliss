@@ -3,17 +3,17 @@ from EasyToCacheLib.easy_to_cache import Cache
 from Server.Domain.music_item import MusicItem
 
 
-class MusicRepository:
+class ClientRepository:
     __instance = None
 
-    def __init__(self, music_data_path):
+    def __init__(self, data_path):
         if self.__initialized:
             return
         self.__initialized = True
 
-        print("INIT MusicRepository")
-        self.data_path = music_data_path
-        self.data = Cache(music_data_path + "music.json", True).set_json_handlers(decrypt_music_item, cache_music_item)
+        print("INIT ClientRepository")
+        self.data_path = data_path
+        self.data = Cache(data_path + "data.json", True).set_json_handlers(decrypt_music_item, cache_music_item)
 
     def add_music(self, music_item: MusicItem):
         self.data.add(music_item.id, music_item).write_to_json()
