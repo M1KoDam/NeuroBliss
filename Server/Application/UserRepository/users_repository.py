@@ -35,7 +35,7 @@ class UsersRepository:
         self.data.add(new_user.user_id, new_user).write_to_json()
         return new_user
 
-    def get_user_by_id(self, user_id):
+    def get_user_by_id(self, user_id) -> User:
         return self.data.try_get(user_id)
 
     def delete_user_by_id(self, user_id):
@@ -45,6 +45,10 @@ class UsersRepository:
     def clear(self):
         self.data.clear().write_to_json()
         self.passwords.clear().write_to_json()
+
+    def update_json(self):
+        self.passwords.write_to_json()
+        self.data.write_to_json()
 
     def __new__(cls, *args, **kwargs):
         if cls.__instance is None:

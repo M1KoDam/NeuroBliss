@@ -24,14 +24,13 @@ class UserInformation(BaseModel):
 
 
 class UserGetMusic(BaseModel):
-    user_id: int
+    user_id: str
     style_music: list
-    music_length: int = 5  # ["angry","dark"]
+    music_length: int  # ["angry","dark"]
 
 
 class MusicInfo(BaseModel):
     music_id: str
-    playlist_name: str
     user_id: str
 
 
@@ -43,7 +42,19 @@ async def get_music(user_get_music: UserGetMusic):
     while not music_item.is_ready:
         pass
     print("has been generated")
-    user_music_item = music_item.copy().change_path("../Application/GettingExamples/")  # добавить path
+    user_music_item = music_item.copy().change_path("Client/Application/Cache/")  # добавить path
+    return FileResponse(file_path, filename=user_music_item.id, headers={"id": f"{user_music_item.id}",
+                                                                         "user_music_path": f"{user_music_item.path}",
+                                                                         "music_length": f"{user_music_item.length_in_seconds}",
+                                                                         })
+
+
+@router.post('/music/download_music_by_id')
+async def download_music_by_id(music_info: MusicInfo):
+    music_item = music_rep.get_music_by_id(music_info.music_id)
+    file_path = music_item.path + music_item.id + ".wav"
+    user_music_item = music_item.copy().change_path("Client/Application/Data/")
+
     return FileResponse(file_path, filename=user_music_item.id, headers={"id": f"{user_music_item.id}",
                                                                          "user_music_path": f"{user_music_item.path}",
                                                                          "music_length": f"{user_music_item.length_in_seconds}",
@@ -54,7 +65,7 @@ async def get_music(user_get_music: UserGetMusic):
 async def get_music_by_id(music_info: MusicInfo):
     music_item = music_rep.get_music_by_id(music_info.music_id)
     file_path = music_item.path + music_item.id + ".wav"
-    user_music_item = music_item.copy().change_path("../Application/Cache/")
+    user_music_item = music_item.copy().change_path("Client/Application/Cache/")
 
     return FileResponse(file_path, filename=user_music_item.id, headers={"id": f"{user_music_item.id}",
                                                                          "user_music_path": f"{user_music_item.path}",
@@ -85,5 +96,7 @@ async def delete_user(user_information: UserInformation):
 
 
 @router.post('/music/add_music_to_playlist')
-async def add_playlist():
-    pass
+async def add_playlist(music_info: MusicInfo):
+    users_rep.get_user_by_id(music_info.user_id).add_music_to_liked(music_info.music_id)
+    users_rep.update_json()
+    return {"message": True}
