@@ -71,7 +71,7 @@ class AppData(metaclass=Singleton):
     Play: PlayState = PlayState.PauseFromGeneration
     Track: Track = None
     Page: PageState = PageState.Generation
-    ActiveGenres: set[str] = set()
+    ActiveGenre: str = None
     Volume: int = 100
     User: User = User()
 
@@ -79,7 +79,7 @@ class AppData(metaclass=Singleton):
         parts = [
             type(self).__name__,
             '(', f'{self.Connection=}, 'f'{self.Play=}, ', f'{self.Track=}, ', f'{self.Page=}, ',
-            f'{self.ActiveGenres=}, ', f'{self.Volume=}, ', f'{self.User=}', ')'
+            f'{self.ActiveGenre=}, ', f'{self.Volume=}, ', f'{self.User=}', ')'
         ]
         return ''.join(parts)
 

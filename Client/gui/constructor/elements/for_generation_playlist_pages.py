@@ -84,7 +84,7 @@ class PlaylistButton(IconButton, EventCaller, EventDependent, metaclass=Singleto
 class GenreButton(ft.ElevatedButton, EventCaller, EventDependent):
     def __init__(self, name):
         self.genre_name = name
-        self.is_active: bool = name in DATA_MANAGER.genres
+        self.is_active: bool = name == DATA_MANAGER.genre
 
         EVENT_HANDLER.subscribe(self, EventType.OnGenresChanged)
 
@@ -109,9 +109,7 @@ class GenreButton(ft.ElevatedButton, EventCaller, EventDependent):
         is_active = not self.is_active
 
         if is_active:
-            DATA_MANAGER.genre_add(self.genre_name)
-        else:
-            DATA_MANAGER.genre_remove(self.genre_name)
+            DATA_MANAGER.genre = self.genre_name
 
     def change_visual(self, is_active: bool) -> None:
         print(type(self).__name__)
@@ -127,7 +125,7 @@ class GenreButton(ft.ElevatedButton, EventCaller, EventDependent):
             button_text_area.update()
 
     def notify(self, data_manager: DataManager) -> None:
-        active_genres = data_manager.genres
+        active_genres = data_manager.genre
         if self.genre_name in active_genres:
             self.change_visual(is_active=True)
         else:

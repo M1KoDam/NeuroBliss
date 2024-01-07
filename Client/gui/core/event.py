@@ -80,15 +80,12 @@ class DataManager(metaclass=Singleton):
         self.raise_event(EventType.OnVolumeChanged)
 
     @property
-    def genres(self) -> set[str]:
-        return self.app_data.ActiveGenres
+    def genre(self) -> str:
+        return self.app_data.ActiveGenre
 
-    def genre_add(self, new_genre: str) -> None:
-        self.app_data.ActiveGenres.add(new_genre)
-        self.raise_event(EventType.OnGenresChanged)
-
-    def genre_remove(self, genre: str) -> None:
-        self.app_data.ActiveGenres.remove(genre)
+    @genre.setter
+    def genre(self, new_genre: str) -> None:
+        self.app_data.ActiveGenre = new_genre
         self.raise_event(EventType.OnGenresChanged)
 
     @property
