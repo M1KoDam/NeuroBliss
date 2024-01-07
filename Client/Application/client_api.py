@@ -3,6 +3,8 @@ import httpx
 from hashlib import sha256
 
 server = "127.0.0.1:8000"
+MUSIC_CACHE_PATH = "Client/Application/Cache/"
+MUSIC_DATA_PATH = "Client/Application/Data/"
 
 
 class UserInformation(BaseModel):
@@ -42,23 +44,29 @@ def login_user(login: str, password: str):
 
 def get_music_generation(user_id: str, style_music: str):
     user_get_music = UserGetMusic(user_id=user_id, style_music=style_music)
-    return _connection_to_server_get_music(user_get_music, f"http://{server}/music/get_music")
+    return _connection_to_server_get_music(user_get_music,
+                                           f"http://{server}/music/get_music",
+                                           path_to_save=MUSIC_CACHE_PATH)
 
 
 def get_music_by_id(music_id: str, user_id: str):
     music_info = MusicInfo(music_id=music_id, user_id=user_id)
-    return _connection_to_server_get_music(music_info, f"http://{server}/music/get_music_by_id")
+    return _connection_to_server_get_music(music_info,
+                                           f"http://{server}/music/get_music_by_id",
+                                           path_to_save=MUSIC_CACHE_PATH)
 
 
 def download_music_by_id(music_id: str, user_id: str):
     music_info = MusicInfo(music_id=music_id, user_id=user_id)
-    return _connection_to_server_get_music(music_info, f"http://{server}/music/download_music_by_id")
+    return _connection_to_server_get_music(music_info,
+                                           f"http://{server}/music/download_music_by_id",
+                                           path_to_save=MUSIC_DATA_PATH)
 
 
-def _connection_to_server_get_music(music_info, server_str: str):
+def _connection_to_server_get_music(music_info, server_str: str, path_to_save: str):
     try:
         response = httpx.post(server_str, json=music_info.dict(), timeout=None)
-        path = response.headers["user_music_path"] + response.headers["id"] + ".wav"
+        path = path_to_save + response.headers["id"] + ".wav"
         with open(path, "wb") as file:
             for chunk in response.iter_bytes():
                 file.write(chunk)

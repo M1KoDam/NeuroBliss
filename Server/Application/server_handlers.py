@@ -41,35 +41,28 @@ async def get_music(user_get_music: UserGetMusic):
     file_path = music_item.path + music_item.id + ".wav"
     while not music_item.is_ready:
         pass
-    user_music_item = music_item.copy().change_path("Client/Application/Cache/")  # добавить path
-    return FileResponse(file_path, filename=user_music_item.id, headers={"id": f"{user_music_item.id}",
-                                                                         "user_music_path": f"{user_music_item.path}",
-                                                                         "music_length": f"{user_music_item.length_in_seconds}",
-                                                                         })
+    return FileResponse(file_path, filename=music_item.id, headers={"id": f"{music_item.id}",
+                                                                    "music_length": f"{music_item.length_in_seconds}"
+                                                                    })
 
 
 @router.post('/music/download_music_by_id')
 async def download_music_by_id(music_info: MusicInfo):
     music_item = music_rep.get_music_by_id(music_info.music_id)
     file_path = music_item.path + music_item.id + ".wav"
-    user_music_item = music_item.copy().change_path("Client/Application/Data/")
 
-    return FileResponse(file_path, filename=user_music_item.id, headers={"id": f"{user_music_item.id}",
-                                                                         "user_music_path": f"{user_music_item.path}",
-                                                                         "music_length": f"{user_music_item.length_in_seconds}",
-                                                                         })
+    return FileResponse(file_path, filename=music_item.id, headers={"id": f"{music_item.id}",
+                                                                    "music_length": f"{music_item.length_in_seconds}"
+                                                                    })
 
 
 @router.post('/music/get_music_by_id')
 async def get_music_by_id(music_info: MusicInfo):
     music_item = music_rep.get_music_by_id(music_info.music_id)
     file_path = music_item.path + music_item.id + ".wav"
-    user_music_item = music_item.copy().change_path("Client/Application/Cache/")
-
-    return FileResponse(file_path, filename=user_music_item.id, headers={"id": f"{user_music_item.id}",
-                                                                         "user_music_path": f"{user_music_item.path}",
-                                                                         "music_length": f"{user_music_item.length_in_seconds}",
-                                                                         })
+    return FileResponse(file_path, filename=music_item.id, headers={"id": f"{music_item.id}",
+                                                                    "music_length": f"{music_item.length_in_seconds}"
+                                                                    })
 
 
 @router.post('/auth/sign-up')
