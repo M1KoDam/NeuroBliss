@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 import httpx
 from hashlib import sha256
+from os import getcwd
+from pathlib import Path
 
 server = "127.0.0.1:8000"
 MUSIC_CACHE_PATH = "Client/Application/Cache/"
@@ -46,24 +48,24 @@ def get_music_generation(user_id: str, style_music: str):
     user_get_music = UserGetMusic(user_id=user_id, style_music=style_music)
     return _connection_to_server_get_music(user_get_music,
                                            f"http://{server}/music/get_music",
-                                           path_to_save=MUSIC_CACHE_PATH)
+                                           path_to_save=MUSIC_CACHE_PATH, is_cached=True)
 
 
 def get_music_by_id(music_id: str, user_id: str):
     music_info = MusicInfo(music_id=music_id, user_id=user_id)
     return _connection_to_server_get_music(music_info,
                                            f"http://{server}/music/get_music_by_id",
-                                           path_to_save=MUSIC_CACHE_PATH)
+                                           path_to_save=MUSIC_CACHE_PATH, is_cached=True)
 
 
 def download_music_by_id(music_id: str, user_id: str):
     music_info = MusicInfo(music_id=music_id, user_id=user_id)
     return _connection_to_server_get_music(music_info,
                                            f"http://{server}/music/download_music_by_id",
-                                           path_to_save=MUSIC_DATA_PATH)
+                                           path_to_save=MUSIC_DATA_PATH, is_cached=False)
 
 
-def _connection_to_server_get_music(music_info, server_str: str, path_to_save: str):
+def _connection_to_server_get_music(music_info, server_str: str, path_to_save: str, is_cached: bool):
     try:
         response = httpx.post(server_str, json=music_info.dict(), timeout=None)
         path = path_to_save + response.headers["id"] + ".wav"
@@ -71,7 +73,8 @@ def _connection_to_server_get_music(music_info, server_str: str, path_to_save: s
             for chunk in response.iter_bytes():
                 file.write(chunk)
 
-        return {"status": True, "path": path}
+        full_path = get_path_to_user_info('Cache' if is_cached else 'Data', response.headers["id"]+".wav")
+        return {"status": True, "path": full_path}
     except httpx.ConnectError:
         return {"status": False, "path": None}
 
@@ -86,3 +89,10 @@ def delete_from_liked(music_id: str, user_id: str):
     json = {"music_id": music_id, "user_id": user_id}
     response = httpx.post(f"http://{server}/music/delete_music_from_liked", json=json, timeout=None)
     return response.json()  # {"message": True/False}, true - deleted
+
+
+def get_path_to_user_info(cached_or_data, music_id) -> Path:
+    path = str(
+        Path(str(getcwd())) / 'Application' / cached_or_data / music_id
+    )
+    return Path(path)
