@@ -74,9 +74,9 @@ def _connection_to_server_get_music(music_info, server_str: str, path_to_save: s
                 file.write(chunk)
 
         full_path = get_path_to_user_info('Cache' if is_cached else 'Data', response.headers["id"]+".wav")
-        return {"status": True, "path": full_path}
+        return {"status": True, "path": full_path, "music_id": response.headers["id"]}
     except httpx.ConnectError:
-        return {"status": False, "path": None}
+        return {"status": False, "path": None, "music_id": None}
 
 
 def add_to_liked(music_id: str, user_id: str):

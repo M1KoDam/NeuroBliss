@@ -1,4 +1,4 @@
-from .data import AppData, PlayState, PageState, DummyTrack, User, ConnectionType, Singleton
+from .data import AppData, PlayState, PageState, Track, User, ConnectionType, Singleton
 from typing import Protocol, Any
 from enum import Enum
 
@@ -62,11 +62,11 @@ class DataManager(metaclass=Singleton):
         self.raise_event(EventType.OnPlayChanged)
 
     @property
-    def track(self) -> DummyTrack:
+    def track(self) -> Track:
         return self.app_data.Track
 
     @track.setter
-    def track(self, new_track: DummyTrack) -> None:
+    def track(self, new_track: Track) -> None:
         self.app_data.Track = new_track
         self.raise_event(EventType.OnTrackChanged)
 

@@ -40,19 +40,17 @@ class Sender(metaclass=Singleton):
         return is_success, user_id
 
     @staticmethod
-    def try_send_get_music_generation_request(user_id: str, genres: list[str]) -> tuple[bool, str]:
-        register_item = api.get_music_generation(user_id, genres)
+    def try_send_get_music_generation_request(user_id: str, genres: set[str]) -> tuple[bool, str, str]:
+        # register_item = api.get_music_generation(user_id, genres)
+        register_item = api.get_music_by_id(music_id='cd91fbd3-e155-471a-a3c2-fa29b5cdb227', user_id=user_id)
         if register_item is httpx.ConnectError:
             print('Servers is unreachable')
             DATA_MANAGER.connection = ConnectionType.Offline
             return False, None
 
-        is_success = register_item["message"]
+        is_success = register_item["status"]
+        path = register_item["path"] if is_success else None
+        music_id = register_item['music_id'] if is_success else None
 
-        user_id = None
-        if is_success:
-            DATA_MANAGER.connection = ConnectionType.Online
-            user_id = register_item["id"]
-
-        return is_success, user_id
+        return is_success, path, music_id
 
