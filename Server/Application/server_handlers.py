@@ -25,8 +25,8 @@ class UserInformation(BaseModel):
 
 class UserGetMusic(BaseModel):
     user_id: str
-    style_music: list
-    music_length: int  # ["angry","dark"]
+    style_music: str  # "angry"
+    music_length: int
 
 
 class MusicInfo(BaseModel):
@@ -36,40 +36,33 @@ class MusicInfo(BaseModel):
 
 @router.post('/music/get_music')
 async def get_music(user_get_music: UserGetMusic):
-    music_item = get_server_application().generate_music_by_phrase(None, user_get_music.style_music,
+    music_item = get_server_application().generate_music_by_phrase(user_get_music.style_music,
                                                                    user_get_music.music_length)
     file_path = music_item.path + music_item.id + ".wav"
     while not music_item.is_ready:
         pass
-    user_music_item = music_item.copy().change_path("Client/Application/Cache/")  # добавить path
-    return FileResponse(file_path, filename=user_music_item.id, headers={"id": f"{user_music_item.id}",
-                                                                         "user_music_path": f"{user_music_item.path}",
-                                                                         "music_length": f"{user_music_item.length_in_seconds}",
-                                                                         })
+    return FileResponse(file_path, filename=music_item.id, headers={"id": f"{music_item.id}",
+                                                                    "music_length": f"{music_item.length_in_seconds}"
+                                                                    })
 
 
 @router.post('/music/download_music_by_id')
 async def download_music_by_id(music_info: MusicInfo):
     music_item = music_rep.get_music_by_id(music_info.music_id)
     file_path = music_item.path + music_item.id + ".wav"
-    user_music_item = music_item.copy().change_path("Client/Application/Data/")
 
-    return FileResponse(file_path, filename=user_music_item.id, headers={"id": f"{user_music_item.id}",
-                                                                         "user_music_path": f"{user_music_item.path}",
-                                                                         "music_length": f"{user_music_item.length_in_seconds}",
-                                                                         })
+    return FileResponse(file_path, filename=music_item.id, headers={"id": f"{music_item.id}",
+                                                                    "music_length": f"{music_item.length_in_seconds}"
+                                                                    })
 
 
 @router.post('/music/get_music_by_id')
 async def get_music_by_id(music_info: MusicInfo):
     music_item = music_rep.get_music_by_id(music_info.music_id)
     file_path = music_item.path + music_item.id + ".wav"
-    user_music_item = music_item.copy().change_path("Client/Application/Cache/")
-
-    return FileResponse(file_path, filename=user_music_item.id, headers={"id": f"{user_music_item.id}",
-                                                                         "user_music_path": f"{user_music_item.path}",
-                                                                         "music_length": f"{user_music_item.length_in_seconds}",
-                                                                         })
+    return FileResponse(file_path, filename=music_item.id, headers={"id": f"{music_item.id}",
+                                                                    "music_length": f"{music_item.length_in_seconds}"
+                                                                    })
 
 
 @router.post('/auth/sign-up')
@@ -86,7 +79,7 @@ async def sign_in(user_information: UserInformation):
                                                     user_information.password)
     if not user:
         return {"message": False}
-    return {"message": True, "id": user.user_id}
+    return {"message": True, "id": user.user_id, "user_liked": user.liked}
 
 
 @router.post('/auth/del_user')
@@ -94,8 +87,23 @@ async def delete_user(user_information: UserInformation):
     return {"message": "The user was successfully deleted"}
 
 
-@router.post('/music/add_music_to_playlist')
-async def add_playlist(music_info: MusicInfo):
-    users_rep.get_user_by_id(music_info.user_id).add_music_to_liked(music_info.music_id)
-    users_rep.update_json()
-    return {"message": True}
+@router.post('/music/add_music_to_liked')
+async def add_to_liked(music_info: MusicInfo):
+    trying_add = users_rep.get_user_by_id(music_info.user_id).add_music_to_liked(music_info.music_id)
+    if trying_add:
+        users_rep.update_json()
+        return {"message": True}
+    else:
+        return {"message": False}
+
+
+@router.post('/music/delete_music_from_liked')
+async def delete_from_liked(music_info: MusicInfo):
+    trying_delete = users_rep.get_user_by_id(music_info.user_id).delete_music_from_liked(music_info.music_id)
+
+    if trying_delete:
+        users_rep.update_json()
+        return {"message": True}
+    else:
+        return {"message": False}
+

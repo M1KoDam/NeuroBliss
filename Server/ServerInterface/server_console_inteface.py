@@ -78,7 +78,8 @@ Verbose: {self.server_app.VERBOSE_INFO_OUTPUT}""")
                       )
 
     def generate_music_by_console(self):
-        input_phrase = input(">>> Enter the phrase: ")
+        input_phrase = input(">>> Choose one of six moods (happy, sad, calm, aggressive, romantic, motivating)"
+                             " or enter your phrase: ")
         try:
             input_seconds = int(input(">>> Enter the duration in seconds (5-30): "))
             if not 5 <= input_seconds <= 30:
@@ -86,7 +87,7 @@ Verbose: {self.server_app.VERBOSE_INFO_OUTPUT}""")
         except ValueError:
             print("Invalid seconds input")
             return
-        self.server_app.generate_music_by_phrase(None, [input_phrase], input_seconds)
+        self.server_app.generate_music_by_phrase(input_phrase, input_seconds)
 
     def get_user_by_enter_id(self):
         self.users_rep.get_user_by_id(input(">>> Enter user id: "))

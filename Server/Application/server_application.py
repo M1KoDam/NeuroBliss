@@ -3,6 +3,7 @@ from Server.Application.MusicRepository.music_repository import MusicRepository
 from Server.Application.Models.musicgenmodel import MusicGenModel
 from Server.Domain.music_item import MusicItem
 from Server.Application.Models.model_levels import ModelLevel
+from Server.Application.Models.model_requests import get_model_request_by_mood, MOODS_LIST
 from Server.Domain.user import User
 import torch
 import uuid
@@ -41,17 +42,20 @@ class ServerApplication:
             self.model.generate(music_item, verbose=self._VERBOSE_INFO_OUTPUT).save(verbose=self._VERBOSE_INFO_OUTPUT)
         except Exception as e:
             print("Generation failed with exception:\n{}".format(e))
-            raise e
         else:
             self.music_rep.add_music(music_item)
 
-    def generate_music_by_phrase(self, user: User | None, params: list[str], length_in_seconds: int) -> MusicItem:
+    def generate_music_by_phrase(self, phrase: str, length_in_seconds: int) -> MusicItem:
         # 90s rock song with loud guitars and heavy drums
         # "Eternal Harmony" is a captivating pop/rock anthem by Neon Dreams that combines vibrant instrumentals, powerful vocals, and an uplifting message of hope and unity.
         # an epic heavy rock song with blistering guitar, thunderous drums, fantasy-styled, fast temp with smooth end
         # Aggressive hard rock instrumental song with heavy drums, electric guitar
 
-        music_item = MusicItem(str(uuid.uuid4()), self.music_rep.data_path, params, length_in_seconds)
+        phrase = phrase.lower().strip()
+        if phrase in MOODS_LIST:
+            phrase = get_model_request_by_mood(phrase)
+
+        music_item = MusicItem(str(uuid.uuid4()), self.music_rep.data_path, phrase, length_in_seconds)
         if self.default_device.__str__() == "cpu":
             thread = threading.Thread(target=self._generate_music,
                                       kwargs={'music_item': music_item})

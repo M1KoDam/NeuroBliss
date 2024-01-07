@@ -42,7 +42,7 @@ def cache_music_item(obj):
     if isinstance(obj, MusicItem):
         return {
             "__type__": "musicitem",
-            "isoformat": [obj.id, obj.path, obj.params, obj.length_in_seconds, obj.is_ready]
+            "isoformat": [obj.id, obj.path, obj.phrase, obj.length_in_seconds, obj.is_ready]
         }
     return None
 

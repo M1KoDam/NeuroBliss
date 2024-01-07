@@ -34,10 +34,11 @@ class MusicGenModel:
         start_generation = datetime.now()
         if verbose:
             print(f"\nStart generation music with next params:\n"
+                  f"Phrase: {music_item.phrase}\n"
                   f"Length: {music_item.length_in_seconds} sec\n"
                   f"Model: {ML_DICT[self.model_level]}")
         inputs = self._processor(
-            text=music_item.params,
+            text=[music_item.phrase],
             padding=True,
             return_tensors="pt",
         )

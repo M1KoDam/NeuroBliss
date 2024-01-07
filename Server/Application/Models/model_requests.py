@@ -1,6 +1,9 @@
 from random import sample, choice
 
 
+MOODS_LIST = ["happy", "sad", "calm", "aggressive", "romantic", "motivating"]
+
+
 MOODS = {
     "happy": ["energetic", "uplifting", "groovy", "playful", "inspirational", "groovy"],
     "sad": ["melancholic", "emotional", "nostalgic", "dark", "soulful"],
