@@ -8,6 +8,7 @@ from .elements.for_account_pages import \
     SmallPlaylistButton, SearchRow, SettingsColumn
 from .elements.for_registrate import RegistrateColumn
 from .elements.base import UploadButton
+from typing import Callable
 import flet as ft
 
 
@@ -183,13 +184,17 @@ class RegistrateArea(ft.Card, metaclass=Singleton):
 
 
 class Dialog(ft.AlertDialog, metaclass=Singleton):
-    def __init__(self):
+    def __init__(self, on_server_unreachable: Callable[[], None]):
         super().__init__(
             open=True,
             modal=True,
             title=ft.Text("Welcome!"),
             content=RegistrateArea(),
-            actions=[UploadButton(label='Sign up', width=74, additive_func=self.on_close)],
+            actions=[
+                UploadButton(
+                    label='Sign up', width=74, on_close=self.on_close, on_server_unreachable=on_server_unreachable
+                )
+            ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
 
@@ -197,3 +202,33 @@ class Dialog(ft.AlertDialog, metaclass=Singleton):
         if need_to_close:
             self.open = False
             self.update()
+
+
+class ServerUnreachableBanner(ft.Banner, metaclass=Singleton):
+    def __init__(self, page: ft.Page):
+        self.page = page
+        page.overlay.append(self)
+
+        super().__init__(
+            bgcolor=ft.colors.AMBER_100,
+            leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=40),
+            content=ft.Text(
+                value="oops, server is unreachable", color=ft.colors.BLACK, size=20, font_family='inter-regular'
+            ),
+            actions=[
+                ft.TextButton(
+                    content=ft.Text(
+                        value="close app", color=ft.colors.BLUE, size=20, font_family='inter-regular'
+                        ),
+                    on_click=lambda e: self.close_app()
+                )
+            ]
+        )
+
+    def invoke(self):
+        self.open = True
+        Dialog(None).open = False
+        self.page.update()
+
+    def close_app(self):
+        self.page.window_close()

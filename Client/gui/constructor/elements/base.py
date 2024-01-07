@@ -6,6 +6,8 @@ from .color_picker import ColorPicker
 from typing import Callable
 import flet as ft
 from Client.Application.client_api import register_user
+import httpx
+import sys
 
 
 class IconButton(ft.IconButton):
@@ -57,14 +59,22 @@ class PasswordField(TextField, metaclass=Singleton):
 class CustomColorPicker(ColorPicker, metaclass=Singleton):
     def __init__(self):
         super().__init__(
-            base_color='#ffffff',
+            base_color=colors.LIGHT_GREY,
             map_width=380,
         )
 
 
 class UploadButton(ft.ElevatedButton, EventCaller):
-    def __init__(self, label: str, width: int, additive_func: Callable[[bool], None] = None):
-        self.additive_func = additive_func
+    def __init__(
+        self,
+        label: str,
+        width: int,
+        on_close: Callable[[bool], None] = None,
+        on_server_unreachable: Callable[[], None] = None
+    ):
+        self.on_close = on_close
+        self.on_server_unreachable = on_server_unreachable
+
         super().__init__(
             content=ft.Row(
                 controls=[ft.Text(value=label, color=ft.colors.WHITE, size=15, expand=True)],
@@ -101,22 +111,30 @@ class UploadButton(ft.ElevatedButton, EventCaller):
         if not avatar_color:
             avatar_color = DATA_MANAGER.user.AvatarColor
 
-        if self.additive_func is not None:
-            register_item = register_user(login=login, password=password)
-            message = register_item["message"]
-            user_id = None
-            if message:
-                user_id = register_item["id"]
+        user_id = None
+        if self.on_close is not None:
+            if need_to_close:
+                register_item = register_user(login=login, password=password)
+                if register_item is httpx.ConnectError:
+                    print('Servers is unreachable')
+                    self.on_server_unreachable()
+                    return
 
-            need_to_close = message
-            self.additive_func(need_to_close)
+                is_success = register_item["message"]
+
+                if is_success:
+                    user_id = register_item["id"]
+
+                need_to_close = is_success
+
+            self.on_close(need_to_close)
 
         if need_to_close:
             LoginField().error_text = ""
             LoginField().update()
             PasswordField().error_text = ""
             PasswordField().update()
-            DATA_MANAGER.user = User(Login=login, Password=password, AvatarColor=avatar_color)
+            DATA_MANAGER.user = User(Login=login, Password=password, AvatarColor=avatar_color, Id=user_id)
 
 
 class SettingListView(ft.ListView):

@@ -5,7 +5,7 @@ from Client.gui.core.event import \
     DataManager, EVENT_HANDLER
 from Client.gui.constructor.zones import \
     TopBar, GenerationArea, PlaylistArea, BottomBar, \
-    UserBar, NavigationBar, DefaultArea, SearchArea, SettingsArea, Dialog
+    UserBar, NavigationBar, DefaultArea, SearchArea, SettingsArea, Dialog, ServerUnreachableBanner
 import flet as ft
 
 
@@ -14,7 +14,7 @@ def set_up_page_appearance(page: ft.Page) -> None:
         print(f"{page.width} x {page.height}")
         print(DATA_MANAGER.app_data)
 
-    page.title = 'Neiro Bliss'
+    page.title = 'NeuroBliss'
     page.fonts = {
         'inter-light': fonts.INTER_LIGHT,
         'inter-medium': fonts.INTER_MEDIUM,
@@ -93,7 +93,10 @@ class Router(EventSolver, metaclass=Singleton):
 def main(page: ft.Page) -> None:
     set_up_page_appearance(page)
     router = Router(page)
-    page.dialog = Dialog()
+
+    banner = ServerUnreachableBanner(page)
+    page.dialog = Dialog(banner.invoke)
+
     router.go(PageState(page.route))
 
 

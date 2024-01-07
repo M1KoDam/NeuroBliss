@@ -34,6 +34,7 @@ class User:
     Login: str = '?'
     Password: str = ''
     AvatarColor: str = colors.LIGHT_GREY
+    Id: str = ''
 
 
 class PageState(Enum):
