@@ -87,8 +87,23 @@ async def delete_user(user_information: UserInformation):
     return {"message": "The user was successfully deleted"}
 
 
-@router.post('/music/add_music_to_playlist')
-async def add_playlist(music_info: MusicInfo):
-    users_rep.get_user_by_id(music_info.user_id).add_music_to_liked(music_info.music_id)
-    users_rep.update_json()
-    return {"message": True}
+@router.post('/music/add_music_to_liked')
+async def add_to_liked(music_info: MusicInfo):
+    trying_add = users_rep.get_user_by_id(music_info.user_id).add_music_to_liked(music_info.music_id)
+    if trying_add:
+        users_rep.update_json()
+        return {"message": True}
+    else:
+        return {"message": False}
+
+
+@router.post('/music/delete_music_from_liked')
+async def delete_from_liked(music_info: MusicInfo):
+    trying_delete = users_rep.get_user_by_id(music_info.user_id).delete_music_from_liked(music_info.music_id)
+
+    if trying_delete:
+        users_rep.update_json()
+        return {"message": True}
+    else:
+        return {"message": False}
+

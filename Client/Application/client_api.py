@@ -78,5 +78,11 @@ def _connection_to_server_get_music(music_info, server_str: str, path_to_save: s
 
 def add_to_liked(music_id: str, user_id: str):
     json = {"music_id": music_id, "user_id": user_id}
-    response = httpx.post(f"http://{server}/music/add_music_to_playlist", json=json, timeout=None)
-    return response.json()
+    response = httpx.post(f"http://{server}/music/add_music_to_liked", json=json, timeout=None)
+    return response.json()  # {"message": True/False}, true - added
+
+
+def delete_from_liked(music_id: str, user_id: str):
+    json = {"music_id": music_id, "user_id": user_id}
+    response = httpx.post(f"http://{server}/music/delete_music_from_liked", json=json, timeout=None)
+    return response.json()  # {"message": True/False}, true - deleted
