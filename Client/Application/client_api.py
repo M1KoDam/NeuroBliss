@@ -13,7 +13,7 @@ class UserInformation(BaseModel):
 
 class UserGetMusic(BaseModel):
     user_id: str
-    style_music: list
+    style_music: str
     music_length: int = 5  # ["angry","dark"]
 
 
@@ -40,7 +40,7 @@ def login_user(login: str, password: str):
         return httpx.ConnectError
 
 
-def get_music_generation(user_id: str, style_music: list):
+def get_music_generation(user_id: str, style_music: str):
     user_get_music = UserGetMusic(user_id=user_id, style_music=style_music)
     return _connection_to_server_get_music(user_get_music, f"http://{server}/music/get_music")
 
