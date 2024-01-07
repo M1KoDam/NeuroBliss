@@ -25,8 +25,10 @@ class PlayState(Enum):
         return self.__str__()
 
 
-class DummyTrack:
-    ...
+@dataclass
+class Track:
+    Name: str = None
+    Path: str = None
 
 
 @dataclass
@@ -67,7 +69,7 @@ class ConnectionType(Enum):
 class AppData(metaclass=Singleton):
     Connection = ConnectionType.Offline
     Play: PlayState = PlayState.PauseFromGeneration
-    Track: DummyTrack = None
+    Track: Track = None
     Page: PageState = PageState.Generation
     ActiveGenres: set[str] = set()
     Volume: int = 100

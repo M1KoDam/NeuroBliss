@@ -71,9 +71,9 @@ def _connection_to_server_get_music(music_info, server_str: str, path_to_save: s
             for chunk in response.iter_bytes():
                 file.write(chunk)
 
-        return {"status": True, "path": path}
+        return {"status": True, "path": path, "music_id": response.headers["id"]}
     except httpx.ConnectError:
-        return {"status": False, "path": None}
+        return {"status": False, "path": None, "music_id": None}
 
 
 def add_to_liked(music_id: str, user_id: str):
