@@ -5,8 +5,8 @@ from os import getcwd
 from pathlib import Path
 
 server = "127.0.0.1:8000"
-MUSIC_CACHE_PATH = "Client/Application/Cache/"
-MUSIC_DATA_PATH = "Client/Application/Data/"
+MUSIC_CACHE_PATH = "../Application/Cache/"
+MUSIC_DATA_PATH = "../Application/Data/"
 
 
 class UserInformation(BaseModel):
