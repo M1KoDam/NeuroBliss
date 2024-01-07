@@ -25,8 +25,8 @@ class UserInformation(BaseModel):
 
 class UserGetMusic(BaseModel):
     user_id: str
-    style_music: list
-    music_length: int  # ["angry","dark"]
+    style_music: str  # "angry"
+    music_length: int
 
 
 class MusicInfo(BaseModel):
@@ -36,7 +36,7 @@ class MusicInfo(BaseModel):
 
 @router.post('/music/get_music')
 async def get_music(user_get_music: UserGetMusic):
-    music_item = get_server_application().generate_music_by_phrase(None, user_get_music.style_music,
+    music_item = get_server_application().generate_music_by_phrase(user_get_music.style_music,
                                                                    user_get_music.music_length)
     file_path = music_item.path + music_item.id + ".wav"
     while not music_item.is_ready:
@@ -86,7 +86,7 @@ async def sign_in(user_information: UserInformation):
                                                     user_information.password)
     if not user:
         return {"message": False}
-    return {"message": True, "id": user.user_id}
+    return {"message": True, "id": user.user_id, "user_liked": user.liked}
 
 
 @router.post('/auth/del_user')
