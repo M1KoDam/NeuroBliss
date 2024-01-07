@@ -1,4 +1,4 @@
-from .data import AppData, PlayState, PageState, DummyTrack, User, Singleton
+from .data import AppData, PlayState, PageState, DummyTrack, User, ConnectionType, Singleton
 from typing import Protocol, Any
 from enum import Enum
 
@@ -10,6 +10,7 @@ class EventType(Enum):
     OnGenresChanged = 3
     OnPageChanged = 4
     OnUserChanged = 5
+    OnConnectionChanged = 6
 
 
 class OnClickHandle(Protocol):
@@ -107,6 +108,15 @@ class DataManager(metaclass=Singleton):
     def user(self, new_user: User) -> None:
         self.app_data.User = new_user
         self.raise_event(EventType.OnUserChanged)
+
+    @property
+    def connection(self) -> ConnectionType:
+        return self.app_data.Connection
+
+    @connection.setter
+    def connection(self, new_connection: ConnectionType) -> None:
+        self.app_data.Connection = new_connection
+        self.raise_event(EventType.OnConnectionChanged)
 
     @staticmethod
     def raise_event(event_type: EventType) -> None:

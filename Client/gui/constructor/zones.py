@@ -1,5 +1,6 @@
 from ..resources import colors
-from ..core.data import Singleton
+from ..core.data import ConnectionType, Singleton
+from ..core.event import EventSolver, EVENT_HANDLER, EventType, DataManager
 from .elements.for_generation_playlist_pages import \
     GenreButton, PlayButton, PlaylistButton, PlayButtonType, PreviousTrackButton, \
     NextTrackButton, LikeButton, ShareButton, VolumeButton, VolumeSlider, AccountButton
@@ -184,15 +185,15 @@ class RegistrateArea(ft.Card, metaclass=Singleton):
 
 
 class Dialog(ft.AlertDialog, metaclass=Singleton):
-    def __init__(self, on_server_unreachable: Callable[[], None]):
+    def __init__(self, need_to_call_dialog: bool):
         super().__init__(
-            open=True,
+            open=need_to_call_dialog,
             modal=True,
             title=ft.Text("Welcome!"),
             content=RegistrateArea(),
             actions=[
                 UploadButton(
-                    label='Sign up', width=74, on_close=self.on_close, on_server_unreachable=on_server_unreachable
+                    label='Sign up', width=74, on_close=self.on_close
                 )
             ],
             actions_alignment=ft.MainAxisAlignment.END,
@@ -204,10 +205,12 @@ class Dialog(ft.AlertDialog, metaclass=Singleton):
             self.update()
 
 
-class ServerUnreachableBanner(ft.Banner, metaclass=Singleton):
+class ServerUnreachableBanner(ft.Banner, EventSolver, metaclass=Singleton):
     def __init__(self, page: ft.Page):
         self.page = page
         page.overlay.append(self)
+
+        EVENT_HANDLER.subscribe(self, EventType.OnConnectionChanged)
 
         super().__init__(
             bgcolor=ft.colors.AMBER_100,
@@ -225,10 +228,15 @@ class ServerUnreachableBanner(ft.Banner, metaclass=Singleton):
             ]
         )
 
+    def notify(self, data_manager: DataManager) -> None:
+        if data_manager.connection == ConnectionType.Offline:
+            self.invoke()
+
     def invoke(self):
         self.open = True
-        Dialog(None).open = False
-        self.page.update()
+        Dialog(need_to_call_dialog=False)
+        if self.page:
+            self.page.update()
 
     def close_app(self):
         self.page.window_close()

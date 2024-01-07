@@ -1,5 +1,6 @@
 from ...resources import colors
-from ...core.data import User, Singleton
+from ...core.request import Sender
+from ...core.data import User, ConnectionType, Singleton
 from ...core.event import OnClickHandle, EventCaller, DATA_MANAGER
 from ...constructor.icons import Icon
 from .color_picker import ColorPicker
@@ -7,7 +8,6 @@ from typing import Callable
 import flet as ft
 from Client.Application.client_api import register_user
 import httpx
-import sys
 
 
 class IconButton(ft.IconButton):
@@ -114,18 +114,7 @@ class UploadButton(ft.ElevatedButton, EventCaller):
         user_id = None
         if self.on_close is not None:
             if need_to_close:
-                register_item = register_user(login=login, password=password)
-                if register_item is httpx.ConnectError:
-                    print('Servers is unreachable')
-                    self.on_server_unreachable()
-                    return
-
-                is_success = register_item["message"]
-
-                if is_success:
-                    user_id = register_item["id"]
-
-                need_to_close = is_success
+                is_success, user_id = Sender.try_make_registration_request(login, password)
 
             self.on_close(need_to_close)
 
@@ -134,7 +123,16 @@ class UploadButton(ft.ElevatedButton, EventCaller):
             LoginField().update()
             PasswordField().error_text = ""
             PasswordField().update()
-            DATA_MANAGER.user = User(Login=login, Password=password, AvatarColor=avatar_color, Id=user_id)
+            if DATA_MANAGER.connection == ConnectionType.Online:
+                DATA_MANAGER.user = User(
+                    Login=login, Password=password, AvatarColor=avatar_color,
+                    OriginalLogin=login, OriginalPassword=password, Id=user_id
+                )
+            else:
+                DATA_MANAGER.user = User(
+                    Login=login, Password=password, AvatarColor=avatar_color,
+                    OriginalLogin=None, OriginalPassword=None, Id=None
+                )
 
 
 class SettingListView(ft.ListView):

@@ -1,5 +1,7 @@
 from Client.gui.resources import colors, fonts, ASSETS_PATH
-from Client.gui.core.data import Singleton
+from Client.gui.core.data import User, Singleton
+from Client.gui.core.request import Sender
+from Client.gui.core.cache_handler import CacheHandler
 from Client.gui.core.event import \
     EventType, PageState, EventSolver, DATA_MANAGER, \
     DataManager, EVENT_HANDLER
@@ -93,9 +95,18 @@ class Router(EventSolver, metaclass=Singleton):
 def main(page: ft.Page) -> None:
     set_up_page_appearance(page)
     router = Router(page)
+    ServerUnreachableBanner(page)
 
-    banner = ServerUnreachableBanner(page)
-    page.dialog = Dialog(banner.invoke)
+    need_to_call_dialog = True
+    user = CacheHandler().try_read_from_cache()
+    if user:
+        is_success, user_id = Sender.try_make_sing_in_request(user.OriginalLogin, user.OriginalPassword)
+        if is_success:
+            user.Id = user_id
+            need_to_call_dialog = False
+            DATA_MANAGER.user = user
+
+    page.dialog = Dialog(need_to_call_dialog)
 
     router.go(PageState(page.route))
 
