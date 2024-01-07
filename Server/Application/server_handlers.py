@@ -41,7 +41,6 @@ async def get_music(user_get_music: UserGetMusic):
     file_path = music_item.path + music_item.id + ".wav"
     while not music_item.is_ready:
         pass
-    print("has been generated")
     user_music_item = music_item.copy().change_path("Client/Application/Cache/")  # добавить path
     return FileResponse(file_path, filename=user_music_item.id, headers={"id": f"{user_music_item.id}",
                                                                          "user_music_path": f"{user_music_item.path}",
@@ -78,7 +77,7 @@ async def sign_up(user_information: UserInformation):
     user = users_rep.register_user(user_information.login, user_information.password)
     if not user:
         return {"message": False}
-    return {"message": True, "id": "user.user_id"}
+    return {"message": True, "id": user.user_id}
 
 
 @router.post('/auth/sign-in')
@@ -86,8 +85,8 @@ async def sign_in(user_information: UserInformation):
     user = users_rep.get_user_by_login_and_password(user_information.login,
                                                     user_information.password)
     if not user:
-        return {"message": "Login or password is incorrect"}
-    return {"message": "Successfully logged in", "id": user.user_id}
+        return {"message": False}
+    return {"message": True, "id": user.user_id}
 
 
 @router.post('/auth/del_user')
