@@ -2,7 +2,7 @@ from ...resources import colors
 from ...core.data import User, Singleton
 from ...core.event import \
     EventType, PageState, EventDependent, EventCaller, \
-    DATA_MANAGER, DataManager, EVENT_HANDLER
+    DATA_MANAGER, DataManager, EVENT_HANDLER, PlayState
 from ...constructor.icons import Icon
 from .states import VolumeStates, VolumeIconState
 from .base import IconButton
@@ -140,24 +140,62 @@ class PlayButtonType(Enum):
 
 
 class PlayButton(IconButton, EventCaller, EventDependent):
-    # TODO
     def __init__(self, button_type: PlayButtonType):
         self.is_active = False
         self.button_type = button_type
+
+        EVENT_HANDLER.subscribe(self, EventType.OnPlayChanged)
 
         icon = Icon.play if button_type == PlayButtonType.Big else Icon.small_play
         super().__init__(icon=icon, on_click=lambda e: self.on_active())
 
     def on_active(self):
-        self.is_active = not self.is_active
+        is_active = not self.is_active
+
+        if self.button_type == PlayButtonType.Big:
+            DATA_MANAGER.play = PlayState.PlayFromGeneration if is_active else PlayState.PauseFromGeneration
+        else:
+            match DATA_MANAGER.play:
+                case PlayState.PlayFromGeneration:
+                    DATA_MANAGER.play = PlayState.PauseFromGeneration
+                case PlayState.PauseFromGeneration:
+                    DATA_MANAGER.play = PlayState.PlayFromGeneration
+                case PlayState.PlayFromExisting:
+                    DATA_MANAGER.play = PlayState.PauseFromExisting
+                case PlayState.PauseFromExisting:
+                    DATA_MANAGER.play = PlayState.PlayFromExisting
+
+    def change_visual(self, is_active: bool) -> None:
+        self.is_active = is_active
         content = self.content.controls
 
         if self.button_type == PlayButtonType.Big:
             content[0] = Icon.pause if self.is_active else Icon.play
+            if DATA_MANAGER.page == PageState.Generation:
+                self.update()
         else:
             content[0] = Icon.small_pause if self.is_active else Icon.small_play
+            self.update()
 
-        self.update()
+    def notify(self, data_manager: DataManager) -> None:
+        play_state = data_manager.play
+
+        if self.button_type == PlayButtonType.Big:
+            match data_manager.play:
+                case PlayState.PlayFromGeneration:
+                    self.change_visual(is_active=True)
+                case PlayState.PauseFromGeneration:
+                    self.change_visual(is_active=False)
+                case _:
+                    self.change_visual(is_active=False)
+        else:
+            match data_manager.play:
+                case PlayState.PlayFromGeneration:
+                    self.change_visual(is_active=True)
+                case PlayState.PlayFromExisting:
+                    self.change_visual(is_active=True)
+                case _:
+                    self.change_visual(is_active=False)
 
 
 class PreviousTrackButton(IconButton):

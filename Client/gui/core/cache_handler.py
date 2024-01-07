@@ -1,5 +1,5 @@
 from .data import User, AppData, Singleton
-from .event import EventSolver, EVENT_HANDLER, DataManager, EventType
+from .event import ConnectionType, EventSolver, EVENT_HANDLER, DataManager, EventType
 from os import getcwd
 from pathlib import Path
 
@@ -9,8 +9,8 @@ class CacheHandler(EventSolver, metaclass=Singleton):
         EVENT_HANDLER.subscribe(self, EventType.OnUserChanged)
 
     def notify(self, data_manager: DataManager):
-        # if data_manager.connection is ConnectionType.Online:
-        self.write_to_cache(data_manager.app_data)
+        if data_manager.connection is ConnectionType.Online:
+            self.write_to_cache(data_manager.app_data)
 
     @staticmethod
     def write_to_cache(app_data: AppData) -> None:

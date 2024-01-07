@@ -5,7 +5,7 @@ from enum import Enum
 
 class EventType(Enum):
     OnVolumeChanged = 0
-    OnStateChanged = 1
+    OnPlayChanged = 1
     OnTrackChanged = 2
     OnGenresChanged = 3
     OnPageChanged = 4
@@ -59,7 +59,7 @@ class DataManager(metaclass=Singleton):
     @play.setter
     def play(self, new_state: PlayState) -> None:
         self.app_data.Play = new_state
-        self.raise_event(EventType.OnStateChanged)
+        self.raise_event(EventType.OnPlayChanged)
 
     @property
     def track(self) -> DummyTrack:
