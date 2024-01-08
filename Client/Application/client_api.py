@@ -49,6 +49,8 @@ def login_user(login: str, password: str):
 
 
 def get_music_generation(user_id: str, style_music: str):
+    if user_id is None or style_music is None:
+        return {"status": False, "path": None, "music_id": None}
     user_get_music = UserGetMusic(user_id=user_id, style_music=style_music)
     return _connection_to_server_get_music(user_get_music,
                                            f"http://{server}/music/get_music",
@@ -56,6 +58,8 @@ def get_music_generation(user_id: str, style_music: str):
 
 
 def get_music_by_id(music_id: str, user_id: str):
+    if music_id is None or user_id is None:
+        return {"status": False, "path": None, "music_id": None}
     music_info = MusicInfo(music_id=music_id, user_id=user_id)
     return _connection_to_server_get_music(music_info,
                                            f"http://{server}/music/get_music_by_id",
@@ -63,6 +67,8 @@ def get_music_by_id(music_id: str, user_id: str):
 
 
 def download_music_by_id(music_id: str, user_id: str):
+    if music_id is None or user_id is None:
+        return {"status": False, "path": None, "music_id": None}
     music_info = MusicInfo(music_id=music_id, user_id=user_id)
     return _connection_to_server_get_music(music_info,
                                            f"http://{server}/music/download_music_by_id",
