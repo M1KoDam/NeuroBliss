@@ -4,10 +4,10 @@ from ...core.event import \
     EventType, PageState, EventDependent, EventCaller, \
     DATA_MANAGER, DataManager, EVENT_HANDLER, PlayState
 from ...constructor.icons import Icon
+from ...core.player import PlayerSolver
 from .states import VolumeStates, VolumeIconState
 from .base import IconButton
 from enum import Enum
-from typing import Callable, Any
 import flet as ft
 
 
@@ -200,7 +200,7 @@ class PreviousTrackButton(IconButton):
         super().__init__(icon=Icon.previous_track, on_click=lambda e: self.on_active())
 
     def on_active(self):
-        print(type(self).__name__)
+        PlayerSolver(None).play_previous()
 
 
 class NextTrackButton(IconButton):
@@ -208,7 +208,7 @@ class NextTrackButton(IconButton):
         super().__init__(icon=Icon.next_track, on_click=lambda e: self.on_active())
 
     def on_active(self):
-        print(type(self).__name__)
+        PlayerSolver(None).play_next()
 
 
 class LikeButton(IconButton):

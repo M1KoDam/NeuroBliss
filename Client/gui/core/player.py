@@ -1,30 +1,12 @@
-from .data import User, AppData, PlayState, Singleton
-from .event import ConnectionType, EventSolver, EVENT_HANDLER, DataManager, EventType
+from .data import PlayState, Singleton
+from .event import EventSolver, EVENT_HANDLER, DataManager, EventType
 from ..constructor.elements.audio import MyAudio
 from .data import Track
 from .request import Sender
 import flet as ft
 
 
-# class LoadTrackSolver(EventSolver, metaclass=Singleton):
-#     def __init__(self):
-#         EVENT_HANDLER.subscribe(self, EventType.OnPlayChanged)
-#
-#     def notify(self, data_manager: DataManager):
-#         if data_manager.connection is ConnectionType.Online:
-#             if data_manager.play == PlayState.PlayFromGeneration:
-#                 is_success, path, music_id = Sender.try_send_get_music_generation_request(
-#                     data_manager.user.Id, data_manager.genre
-#                 )
-#                 if is_success:
-#                     data_manager.track = Track(music_id, path)
-#                 else:
-#                     data_manager.play = PlayState.PauseFromGeneration
-#         elif data_manager.play == PlayState.PlayFromGeneration:
-#             data_manager.play = PlayState.PauseFromGeneration
-
-
-class PlayTrackSolver(EventSolver, metaclass=Singleton):
+class PlayerSolver(EventSolver, metaclass=Singleton):
     def __init__(self, page: ft.Page):
         self.page = page
 
@@ -37,6 +19,8 @@ class PlayTrackSolver(EventSolver, metaclass=Singleton):
         EVENT_HANDLER.subscribe(self, EventType.OnPlayChanged)
 
     def play_from_generation(self, data_manager: DataManager) -> None:
+        if data_manager.play == PlayState.PauseFromGeneration:
+            data_manager.play = PlayState.PlayFromGeneration
         if self.generation_index == len(self.generation_playlist):
             is_success, path, music_id = Sender.try_send_get_music_generation_request(
                 data_manager.user.Id, data_manager.genre
@@ -69,6 +53,32 @@ class PlayTrackSolver(EventSolver, metaclass=Singleton):
             elif DataManager().play == PlayState.PlayFromExisting:
                 ...
 
+    def play_next(self):
+        data_manager = DataManager()
+
+        if data_manager.play == PlayState.PlayFromGeneration or data_manager.play == PlayState.PauseFromGeneration:
+            self.generation_index = min(self.generation_index + 1, len(self.generation_playlist))
+            if 0 <= self.generation_index - 1 < len(self.generation_playlist):
+                self.generation_playlist[self.generation_index - 1].Audio.pause()
+            self.play_from_generation(data_manager)
+        else:
+            ...
+
+    def play_previous(self):
+        data_manager = DataManager()
+
+        if data_manager.play == PlayState.PlayFromGeneration or data_manager.play == PlayState.PauseFromGeneration:
+            if self.generation_index - 1 < 0 or self.generation_index == 0 and len(self.generation_playlist) == 0:
+                self.play_next()
+            else:
+                self.generation_index -= 1
+                if 0 <= self.generation_index + 1 < len(self.generation_playlist):
+                    self.generation_playlist[self.generation_index + 1].Audio.pause()
+                DataManager.track = self.generation_playlist[self.generation_index]
+                self.generation_playlist[self.generation_index].Audio.play()
+        else:
+            ...
+
     def notify(self, event: EventType, data_manager: DataManager):
         match data_manager.play:
             case PlayState.PlayFromGeneration:
@@ -79,20 +89,3 @@ class PlayTrackSolver(EventSolver, metaclass=Singleton):
                 self.pause_from_generation()
             case PlayState.PauseFromExisting:
                 ...
-        # print('play...')
-        #
-        # self.page.overlay.clear()  # TODO resume
-        #
-        # # audio = ft.Audio(src=data_manager.track.Path, autoplay=True)
-        # audio = ft.Audio(
-        #     src='/Users/dimasta/work/python/pycharm/NeuroBliss/Client/Application/Cache/cd91fbd3-e155-471a-a3c2-fa29b5cdb227.wav',
-        #     autoplay=False,
-        #     volume=data_manager.volume / 100,
-        #     balance=0,
-        #     on_position_changed=self.progress_change,
-        #     on_state_changed=self.check_state
-        #
-        # )
-        #
-        # self.page.overlay.append(audio)
-        # self.page.update()
