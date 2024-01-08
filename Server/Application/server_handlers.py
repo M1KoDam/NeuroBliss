@@ -64,19 +64,8 @@ async def download_music_by_id(music_info: MusicInfo):
 
 @router.post('/music/get_music_by_id')
 async def get_music_by_id(music_info: MusicInfo):
-    temp1 = "ece5415a-46b4-4dcf-9f86-6befebfdcf5c"
-    temp2 = "9c66043b-b06b-481f-822e-fdd1272523dc"
-    global condition
 
-    if condition:
-        condition = False
-        selected_option = temp1
-
-    else:
-        selected_option = temp2
-        condition = True
-    print(selected_option)
-    music_item = music_rep.get_music_by_id(selected_option)
+    music_item = music_rep.get_music_by_id(music_info.music_id)
     if music_item is None:
         message = {"message": False}
         return JSONResponse(message, status_code=404)
