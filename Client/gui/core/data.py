@@ -32,6 +32,14 @@ class Track:
     Path: str = None
     Audio: ft.Audio = None
 
+    def __hash__(self):
+        return hash((self.Name, self.Path))
+
+    def __eq__(self, other):
+        if isinstance(other, Track):
+            return (self.Name, self.Path) == (other.Name, other.Path)
+        return False
+
 
 @dataclass
 class User:
@@ -68,7 +76,7 @@ class ConnectionType(Enum):
         return self.__str__()
 
 
-class AppData(metaclass=Singleton):
+class AppData:
     Connection = ConnectionType.Offline
     Play: PlayState = PlayState.PauseFromGeneration
     Track: Track = None
@@ -76,12 +84,13 @@ class AppData(metaclass=Singleton):
     ActiveGenre: str = None
     Volume: float = 100
     User: User = User()
+    Library: set[Track] = set()
 
     def __str__(self) -> str:
         parts = [
             type(self).__name__,
             '(', f'{self.Connection=}, 'f'{self.Play=}, ', f'{self.Track=}, ', f'{self.Page=}, ',
-            f'{self.ActiveGenre=}, ', f'{self.Volume=}, ', f'{self.User=}', ')'
+            f'{self.ActiveGenre=}, ', f'{self.Volume=}, ', f'{self.User=}', f'{self.Library=}', ')'
         ]
         return ''.join(parts)
 

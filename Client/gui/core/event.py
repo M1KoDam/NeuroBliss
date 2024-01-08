@@ -13,6 +13,7 @@ class EventType(Enum):
     OnConnectionChanged = 6
     OnPositionBySliderChanged = 7
     OnPositionChanged = 8
+    OnLibraryChanged = 9
 
 
 class OnClickHandle(Protocol):
@@ -129,6 +130,18 @@ class DataManager(metaclass=Singleton):
         audio = self.app_data.Track.Audio
         new_position = audio.get_duration() * new_ratio
         audio.seek(int(new_position))
+
+    @property
+    def library(self) -> set[Track]:
+        return self.app_data.Library
+
+    def add_to_library(self, track: Track) -> None:
+        self.app_data.Library.add(track)
+        self.raise_event(EventType.OnLibraryChanged)
+
+    def remove_from_library(self, track: Track) -> None:
+        self.app_data.Library.remove(track)
+        self.raise_event(EventType.OnLibraryChanged)
 
     @staticmethod
     def raise_event(event_type: EventType) -> None:

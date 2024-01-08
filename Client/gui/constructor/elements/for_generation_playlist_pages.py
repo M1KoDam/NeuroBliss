@@ -1,15 +1,14 @@
 from ...resources import colors
-from ...core.data import User, Singleton
+from ...core.data import User, Singleton, Track
 from ...core.event import \
     EventType, PageState, EventDependent, EventCaller, \
-    DATA_MANAGER, DataManager, EVENT_HANDLER, PlayState
+    DATA_MANAGER, DataManager, EVENT_HANDLER, PlayState, EventSolver
 from ...constructor.icons import Icon
 from ...core.player import PlayerSolver
 from .states import VolumeStates, VolumeIconState
 from .base import IconButton
 from enum import Enum
 import flet as ft
-
 
 PAGES = [PageState.Generation, PageState.Playlist]
 
@@ -215,18 +214,40 @@ class NextTrackButton(IconButton):
         PlayerSolver(None).play_next(DataManager())
 
 
-class LikeButton(IconButton):
-    def __init__(self):
-        self.is_active = False
-        super().__init__(icon=Icon.like, on_click=lambda e: self.on_active())
+class LikeButton(ft.IconButton, EventDependent, EventCaller, EventSolver):
+    def __init__(self, is_active=False):
+        self.is_active = is_active
+        icon = Icon.filled_like if self.is_active else Icon.like
 
-    def on_active(self):
-        self.is_active = not self.is_active
+        EVENT_HANDLER.subscribe(self, EventType.OnLibraryChanged)
+        EVENT_HANDLER.subscribe(self, EventType.OnTrackChanged)
+
+        super().__init__(
+            content=ft.Row(controls=[icon]),
+            on_click=lambda e: self.on_active())
+
+    def on_active(self) -> None:
+        if DATA_MANAGER.track is None:
+            return
+        is_active = not self.is_active
+        if is_active:
+            DATA_MANAGER.add_to_library(DATA_MANAGER.track)
+        else:
+            DATA_MANAGER.remove_from_library(DATA_MANAGER.track)
+
+    def change_visual(self, is_active) -> None:
+        self.is_active = is_active
 
         content = self.content.controls
         content[0] = Icon.filled_like if self.is_active else Icon.like
 
         self.update()
+
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
+        if DATA_MANAGER.track in DATA_MANAGER.library and self.is_active is not True:
+            self.change_visual(is_active=True)
+        elif DATA_MANAGER.track not in DATA_MANAGER.library and self.is_active is True:
+            self.change_visual(is_active=False)
 
 
 class VolumeButton(IconButton, EventCaller, EventDependent, metaclass=Singleton):
@@ -310,3 +331,57 @@ class TrackPositionSlider(ft.Slider, EventCaller, EventDependent, metaclass=Sing
     def notify(self, event: EventType, data_manager: DataManager) -> None:
         value = data_manager.position_ratio * self.max
         self.change_visual(value)
+
+
+class TrackItem(ft.OutlinedButton):
+    def __init__(self, track: Track):
+        self.track = track
+
+        super().__init__(
+            content=ft.Row(
+                controls=[
+                    ft.Text(
+                        value=track.Name, color=ft.colors.WHITE, size=15, font_family='inter-regular', height=20,
+                        text_align=ft.TextAlign.CENTER),
+                    # ft.Row(controls=[ShareButton()], spacing=10)
+                    # ft.Row(controls=[ShareButton(), LikeButton(is_active=True)], spacing=10)
+                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
+            height=58,
+            on_click=lambda e: self.on_active(),
+            style=ft.ButtonStyle(
+                animation_duration=500,
+                padding={ft.MaterialState.PRESSED: 10},
+                shape={
+                    ft.MaterialState.HOVERED: ft.RoundedRectangleBorder(radius=12),
+                    ft.MaterialState.DEFAULT: ft.RoundedRectangleBorder(radius=8)
+                }
+            )
+        )
+
+    def on_active(self) -> None:
+        ...
+        # is_active = not self.is_active
+        #
+        # if is_active:
+        #     DATA_MANAGER.genre = self.genre_name
+
+    def change_visual(self, is_active: bool) -> None:
+        print(type(self).__name__)
+
+        if self.is_active == is_active:
+            return
+
+        self.is_active = is_active
+        button_text_area = self.content.controls[0]
+        button_text_area.color = colors.BLUE if self.is_active else colors.WHITE
+
+        if DATA_MANAGER.page == PageState.Generation:
+            button_text_area.update()
+
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
+        active_genres = data_manager.genre
+        if self.genre_name in active_genres:
+            self.change_visual(is_active=True)
+        else:
+            self.change_visual(is_active=False)

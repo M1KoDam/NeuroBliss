@@ -1,9 +1,10 @@
 from ..resources import colors
-from ..core.data import ConnectionType, Singleton
-from ..core.event import EventSolver, EVENT_HANDLER, EventType, DataManager
+from ..core.data import ConnectionType, Singleton, Track, PageState
+from ..core.event import EventSolver, EVENT_HANDLER, EventType, DataManager, EventDependent
 from .elements.for_generation_playlist_pages import \
     GenreButton, PlayButton, PlaylistButton, PlayButtonType, PreviousTrackButton, \
-    NextTrackButton, LikeButton, ShareButton, VolumeButton, VolumeSlider, AccountButton, TrackPositionSlider
+    NextTrackButton, LikeButton, ShareButton, VolumeButton, VolumeSlider, AccountButton, \
+    TrackPositionSlider, TrackItem
 from .elements.for_account_pages import \
     UserAvatar, UserName, SearchButton, SettingsButton, SmallGenerationButton, \
     SmallPlaylistButton, SearchRow, SettingsColumn
@@ -12,15 +13,62 @@ from .elements.base import UploadButton, SingInButton
 import flet as ft
 
 
+class Playlist(ft.ListView, EventDependent, metaclass=Singleton):
+    def __init__(self):
+        self.library: [Track] = set()
+
+        EVENT_HANDLER.subscribe(self, EventType.OnLibraryChanged)
+
+        super().__init__(
+            controls=[
+            ],
+            spacing=10,
+            expand=True,
+            auto_scroll=True
+        )
+
+    def add(self, track: Track) -> None:
+        self.controls.append(TrackItem(track))
+
+    def remove(self, track: Track) -> None:
+        for control in self.controls:
+            if control.track.Name == track.Name:
+                self.controls.remove(control)
+                break
+
+    def change_visual(self, library: set[Track]) -> None:
+        print(library)
+
+        for track in library:
+            if track not in self.library:
+                self.add(track)
+
+        for track in self.library:
+            if track not in library:
+                self.remove(track)
+
+        if DataManager().page is PageState.Playlist:
+            self.update()
+
+        self.library = library.copy()
+        print(f'len: {len(self.library)}')
+
+    def notify(self, event: EventType, data_manager: 'DataManager') -> None:
+        self.change_visual(data_manager.library)
+
+
 class PlaylistArea(ft.Card, metaclass=Singleton):
     def __init__(self):
         super().__init__(
-            content=ft.Row(
+            content=ft.Stack(
                 controls=[
+                    ft.Row(
+                        controls=[Playlist()],
+                        alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        expand=True, top=10, left=10, right=10, bottom=10,
+                    ),
                 ],
-                alignment=ft.MainAxisAlignment.SPACE_EVENLY,
-                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                expand=True,
             ),
             color=colors.DARK_SLATE_BLUE,
             expand=True,
@@ -220,7 +268,7 @@ class ServerUnreachableBanner(ft.Banner, EventSolver, metaclass=Singleton):
                 ft.TextButton(
                     content=ft.Text(
                         value="close app", color=ft.colors.BLUE, size=20, font_family='inter-regular'
-                        ),
+                    ),
                     on_click=lambda e: self.close_app()
                 )
             ]
