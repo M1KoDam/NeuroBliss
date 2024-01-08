@@ -24,7 +24,6 @@ class Playlist(ft.ListView, EventDependent, metaclass=Singleton):
             ],
             spacing=10,
             expand=True,
-            auto_scroll=True
         )
 
     def add(self, track: Track) -> None:

@@ -372,4 +372,16 @@ class TrackItem(ft.OutlinedButton):
         DATA_MANAGER.remove_from_library(self.track)
 
     def on_active(self) -> None:
-        ...
+        if DATA_MANAGER.track == self.track:
+            match DATA_MANAGER.play:
+                case PlayState.PauseFromExisting:
+                    DATA_MANAGER.play = PlayState.PlayFromExisting
+                case PlayState.PlayFromExisting:
+                    DATA_MANAGER.play = PlayState.PauseFromExisting
+                case PlayState.PlayFromGeneration:
+                    DATA_MANAGER.play = PlayState.PlayFromExisting
+                case PlayState.PauseFromGeneration:
+                    DATA_MANAGER.play = PlayState.PauseFromExisting
+        else:
+            DATA_MANAGER.track = self.track
+            DATA_MANAGER.play = PlayState.PlayFromExisting
