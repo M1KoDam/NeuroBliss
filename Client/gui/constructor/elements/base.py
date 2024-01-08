@@ -127,10 +127,16 @@ class UploadButton(ft.ElevatedButton, EventCaller):
             LoginField().update()
             PasswordField().error_text = ""
             PasswordField().update()
+
+            original_login = DATA_MANAGER.user.OriginalLogin if DATA_MANAGER.user.OriginalLogin is not None \
+                else login
+            original_password = DATA_MANAGER.user.OriginalPassword if DATA_MANAGER.user.OriginalPassword is not None \
+                else password
+
             if DATA_MANAGER.connection == ConnectionType.Online:
                 DATA_MANAGER.user = User(
                     Login=login, Password=password, AvatarColor=avatar_color,
-                    OriginalLogin=login, OriginalPassword=password, Id=user_id
+                    OriginalLogin=original_login, OriginalPassword=original_password, Id=user_id
                 )
             else:
                 DATA_MANAGER.user = User(

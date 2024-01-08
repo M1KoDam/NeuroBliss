@@ -49,6 +49,8 @@ def login_user(login: str, password: str):
 
 
 def get_music_generation(user_id: str, style_music: str):
+    if user_id is None or style_music is None:
+        return {"status": False, "path": None, "music_id": None}
     user_get_music = UserGetMusic(user_id=user_id, style_music=style_music)
     return _connection_to_server_get_music(user_get_music,
                                            f"http://{server}/music/get_music",
@@ -56,6 +58,8 @@ def get_music_generation(user_id: str, style_music: str):
 
 
 def get_music_by_id(music_id: str, user_id: str):
+    if music_id is None or user_id is None:
+        return {"status": False, "path": None, "music_id": None}
     music_info = MusicInfo(music_id=music_id, user_id=user_id)
     return _connection_to_server_get_music(music_info,
                                            f"http://{server}/music/get_music_by_id",
@@ -63,6 +67,8 @@ def get_music_by_id(music_id: str, user_id: str):
 
 
 def download_music_by_id(music_id: str, user_id: str):
+    if music_id is None or user_id is None:
+        return {"status": False, "path": None, "music_id": None}
     music_info = MusicInfo(music_id=music_id, user_id=user_id)
     return _connection_to_server_get_music(music_info,
                                            f"http://{server}/music/download_music_by_id",
@@ -74,9 +80,10 @@ def _connection_to_server_get_music(music_info, server_str: str, path_to_save: s
         response = httpx.post(server_str, json=music_info.dict(), timeout=None)
         path = path_to_save + response.headers["id"] + ".wav"
         full_path = get_path_to_user_info('Cache' if is_cached else 'Data', response.headers["id"]+".wav")
-        with open(full_path, "wb") as file:
-            for chunk in response.iter_bytes():
-                file.write(chunk)
+        if not os.path.exists(full_path):
+            with open(full_path, "wb") as file:
+                for chunk in response.iter_bytes():
+                    file.write(chunk)
 
         return {"status": True, "path": full_path, "music_id": response.headers["id"]}
     except httpx.ConnectError:

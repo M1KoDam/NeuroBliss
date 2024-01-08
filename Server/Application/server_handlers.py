@@ -1,6 +1,6 @@
 from datetime import datetime
 from fastapi import APIRouter
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from Server.Application.__init__ import get_server_application
 from Server.Application.__init__ import get_users_repository, get_music_repository
@@ -51,11 +51,15 @@ async def get_music(user_get_music: UserGetMusic):
 @router.post('/music/download_music_by_id')
 async def download_music_by_id(music_info: MusicInfo):
     music_item = music_rep.get_music_by_id(music_info.music_id)
-    file_path = music_item.path + music_item.id + ".wav"
+    if music_item is None:
+        message = {"message": False}
+        headers = {"message": "False"}
+        return JSONResponse(message, headers=headers, status_code=404)
 
+    file_path = music_item.path + music_item.id + ".wav"
     return FileResponse(file_path, filename=music_item.id, headers={"id": f"{music_item.id}",
                                                                     "music_length": f"{music_item.length_in_seconds}"
-                                                                    })
+                                                                    }, status_code=200)
 
 
 @router.post('/music/get_music_by_id')
@@ -73,10 +77,15 @@ async def get_music_by_id(music_info: MusicInfo):
         condition = True
     print(selected_option)
     music_item = music_rep.get_music_by_id(selected_option)
+    if music_item is None:
+        message = {"message": False}
+        return JSONResponse(message, status_code=404)
+
     file_path = music_item.path + music_item.id + ".wav"
-    return FileResponse(file_path, filename=music_item.id, headers={"id": f"{music_item.id}",
+    return FileResponse(file_path, filename=music_item.id, headers={"message": "True",
+                                                                    "id": f"{music_item.id}",
                                                                     "music_length": f"{music_item.length_in_seconds}"
-                                                                    })
+                                                                    }, status_code=200)
 
 
 @router.post('/auth/sign-up')
@@ -120,4 +129,3 @@ async def delete_from_liked(music_info: MusicInfo):
         return {"message": True}
     else:
         return {"message": False}
-
