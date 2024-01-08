@@ -1,15 +1,15 @@
 from ...resources import colors
-from ...core.data import User, Singleton
+from ...core.data import User, Singleton, Track
 from ...core.event import \
     EventType, PageState, EventDependent, EventCaller, \
-    DATA_MANAGER, DataManager, EVENT_HANDLER, PlayState
-from ...constructor.icons import Icon
+    DATA_MANAGER, DataManager, EVENT_HANDLER, PlayState, EventSolver
+from ...constructor.icons import Icon, ICON
 from ...core.player import PlayerSolver
 from .states import VolumeStates, VolumeIconState
 from .base import IconButton
 from enum import Enum
+from typing import Callable
 import flet as ft
-
 
 PAGES = [PageState.Generation, PageState.Playlist]
 
@@ -215,18 +215,40 @@ class NextTrackButton(IconButton):
         PlayerSolver(None).play_next(DataManager())
 
 
-class LikeButton(IconButton):
-    def __init__(self):
-        self.is_active = False
-        super().__init__(icon=Icon.like, on_click=lambda e: self.on_active())
+class LikeButton(ft.IconButton, EventDependent, EventCaller, EventSolver):
+    def __init__(self, is_active=False):
+        self.is_active = is_active
+        icon = ICON.filled_like if self.is_active else ICON.like
 
-    def on_active(self):
-        self.is_active = not self.is_active
+        EVENT_HANDLER.subscribe(self, EventType.OnLibraryChanged)
+        EVENT_HANDLER.subscribe(self, EventType.OnTrackChanged)
+
+        super().__init__(
+            content=ft.Row(controls=[icon]),
+            on_click=lambda e: self.on_active())
+
+    def on_active(self) -> None:
+        if DATA_MANAGER.track is None:
+            return
+        is_active = not self.is_active
+        if is_active:
+            DATA_MANAGER.add_to_library(DATA_MANAGER.track)
+        else:
+            DATA_MANAGER.remove_from_library(DATA_MANAGER.track)
+
+    def change_visual(self, is_active) -> None:
+        self.is_active = is_active
 
         content = self.content.controls
-        content[0] = Icon.filled_like if self.is_active else Icon.like
+        content[0] = ICON.filled_like if self.is_active else ICON.like
 
         self.update()
+
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
+        if DATA_MANAGER.track in DATA_MANAGER.library and self.is_active is not True:
+            self.change_visual(is_active=True)
+        elif DATA_MANAGER.track not in DATA_MANAGER.library and self.is_active is True:
+            self.change_visual(is_active=False)
 
 
 class VolumeButton(IconButton, EventCaller, EventDependent, metaclass=Singleton):
@@ -282,7 +304,7 @@ class VolumeSlider(ft.Slider, EventCaller, EventDependent, metaclass=Singleton):
 
 class ShareButton(IconButton):
     def __init__(self):
-        super().__init__(icon=Icon.share, on_click=lambda e: self.on_change())
+        super().__init__(icon=ICON.share, on_click=lambda e: self.on_change())
 
     def on_change(self):
         print(type(self).__name__)
@@ -310,3 +332,44 @@ class TrackPositionSlider(ft.Slider, EventCaller, EventDependent, metaclass=Sing
     def notify(self, event: EventType, data_manager: DataManager) -> None:
         value = data_manager.position_ratio * self.max
         self.change_visual(value)
+
+
+class LikeTrackItemButton(ft.IconButton, EventCaller):
+    def __init__(self, on_active: Callable[[], None]):
+        icon = ICON.filled_like
+
+        super().__init__(
+            content=ft.Row(controls=[icon]),
+            on_click=lambda e: on_active())
+
+
+class TrackItem(ft.OutlinedButton):
+    def __init__(self, track: Track):
+        self.track = track
+
+        super().__init__(
+            content=ft.Row(
+                controls=[
+                    ft.Text(
+                        value=track.Name, color=ft.colors.WHITE, size=15, font_family='inter-regular', height=20,
+                        text_align=ft.TextAlign.CENTER),
+                    ft.Row(controls=[ShareButton(), LikeTrackItemButton(on_active=self.on_unlike)], spacing=10)
+                ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
+            height=58,
+            on_click=lambda e: self.on_active(),
+            style=ft.ButtonStyle(
+                animation_duration=500,
+                padding={ft.MaterialState.PRESSED: 10},
+                shape={
+                    ft.MaterialState.HOVERED: ft.RoundedRectangleBorder(radius=12),
+                    ft.MaterialState.DEFAULT: ft.RoundedRectangleBorder(radius=8)
+                }
+            )
+        )
+
+    def on_unlike(self):
+        DATA_MANAGER.remove_from_library(self.track)
+
+    def on_active(self) -> None:
+        ...
