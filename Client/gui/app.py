@@ -2,7 +2,7 @@ from Client.gui.resources import colors, fonts, ASSETS_PATH
 from Client.gui.core.data import Singleton, ConnectionType
 from Client.gui.core.request import Sender
 from Client.gui.core.cache_handler import CacheHandler
-from Client.gui.core.other_solver import PlayTrackSolver
+from Client.gui.core.player import PlayerSolver
 from Client.gui.core.event import \
     EventType, PageState, EventSolver, DATA_MANAGER, \
     DataManager, EVENT_HANDLER
@@ -89,7 +89,7 @@ class Router(EventSolver, metaclass=Singleton):
         self.view.update()
         self.page.update()
 
-    def notify(self, data_manager: DataManager) -> None:
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
         self.go(data_manager.page)
 
 
@@ -97,7 +97,7 @@ def main(page: ft.Page) -> None:
     set_up_page_appearance(page)
     router = Router(page)
     ServerUnreachableBanner(page)
-    PlayTrackSolver(page)
+    PlayerSolver(page)
 
     need_to_call_dialog = True
     user = CacheHandler().try_read_from_cache()

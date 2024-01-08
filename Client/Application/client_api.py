@@ -80,9 +80,10 @@ def _connection_to_server_get_music(music_info, server_str: str, path_to_save: s
         response = httpx.post(server_str, json=music_info.dict(), timeout=None)
         path = path_to_save + response.headers["id"] + ".wav"
         full_path = get_path_to_user_info('Cache' if is_cached else 'Data', response.headers["id"]+".wav")
-        with open(full_path, "wb") as file:
-            for chunk in response.iter_bytes():
-                file.write(chunk)
+        if not os.path.exists(full_path):
+            with open(full_path, "wb") as file:
+                for chunk in response.iter_bytes():
+                    file.write(chunk)
 
         return {"status": True, "path": full_path, "music_id": response.headers["id"]}
     except httpx.ConnectError:

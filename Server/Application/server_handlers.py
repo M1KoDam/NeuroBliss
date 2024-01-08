@@ -82,7 +82,7 @@ async def get_music_by_id(music_info: MusicInfo):
         return JSONResponse(message, status_code=404)
 
     file_path = music_item.path + music_item.id + ".wav"
-    return FileResponse(file_path, filename=music_item.id, headers={"message": True,
+    return FileResponse(file_path, filename=music_item.id, headers={"message": "True",
                                                                     "id": f"{music_item.id}",
                                                                     "music_length": f"{music_item.length_in_seconds}"
                                                                     }, status_code=200)

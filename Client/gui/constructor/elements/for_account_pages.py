@@ -26,7 +26,7 @@ class UserAvatar(ft.CircleAvatar, EventDependent, metaclass=Singleton):
         if DATA_MANAGER.page in [PageState.Account, PageState.Settings, PageState.Search]:
             self.update()
 
-    def notify(self, data_manager: DataManager) -> None:
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
         self.change_visual(data_manager.user)
 
 
@@ -44,7 +44,7 @@ class UserName(ft.Text, EventDependent, metaclass=Singleton):
         if DATA_MANAGER.page in [PageState.Account, PageState.Settings, PageState.Search]:
             self.update()
 
-    def notify(self, data_manager: DataManager) -> None:
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
         self.change_visual(data_manager.user.Login)
 
 
