@@ -1,4 +1,6 @@
 import threading
+from collections import defaultdict
+
 from Server.Application.MusicRepository.music_repository import MusicRepository
 from Server.Application.Models.musicgenmodel import MusicGenModel
 from Server.Domain.music_item import MusicItem
@@ -18,8 +20,8 @@ class ServerApplication:
         self.__initialized = True
 
         print("INIT APP")
-        self.default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        # torch.set_default_device(self.default_device)
+        self.default_device = torch.device("cuda")
+        torch.set_default_device(self.default_device)
 
         self.music_rep = music_rep
 
@@ -32,6 +34,8 @@ class ServerApplication:
         self._tasks_limits = 3
         self._tasks: list[threading.Thread] = []
         self._tasks_queue: list[threading.Thread] = []
+
+        self.huy = defaultdict(list)
 
     @property
     def VERBOSE_INFO_OUTPUT(self):
@@ -51,11 +55,15 @@ class ServerApplication:
         # an epic heavy rock song with blistering guitar, thunderous drums, fantasy-styled, fast temp with smooth end
         # Aggressive hard rock instrumental song with heavy drums, electric guitar
 
+        t = phrase
+
         phrase = phrase.lower().strip()
         if phrase in MOODS_LIST:
             phrase = get_model_request_by_mood(phrase)
 
         music_item = MusicItem(str(uuid.uuid4()), self.music_rep.data_path, phrase, length_in_seconds)
+
+        self.huy[t].append(music_item.id)
         if self.default_device.__str__() == "cpu":
             thread = threading.Thread(target=self._generate_music,
                                       kwargs={'music_item': music_item})

@@ -24,7 +24,7 @@ STYLES = {
 
 INSTRUMENTS = {
     "happy": ["guitar", "drums", "synth", "bass guitar"],
-    "sad": ["violin", "piano", "saxophone", "acoustic guitar", "flute"],
+    "sad": ["violin", "piano", "acoustic guitar", "flute"],
     "calm": ["piano", "acoustic Guitar", "flute", "harp", "cello", "violin"],
     "aggressive": ["electric guitar", "bass guitar", "heavy drums", "synth"],
     "romantic": ["violin", "piano", "flute", "clarinet"],
