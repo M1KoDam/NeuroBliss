@@ -3,10 +3,14 @@ import httpx
 from hashlib import sha256
 from os import getcwd
 from pathlib import Path
+import os
 
 server = "127.0.0.1:8000"
 MUSIC_CACHE_PATH = "../Application/Cache/"
 MUSIC_DATA_PATH = "../Application/Data/"
+CURRENT_DIR = os.getcwd()
+global Is_InApp
+Is_InApp = False
 
 
 class UserInformation(BaseModel):
@@ -69,11 +73,11 @@ def _connection_to_server_get_music(music_info, server_str: str, path_to_save: s
     try:
         response = httpx.post(server_str, json=music_info.dict(), timeout=None)
         path = path_to_save + response.headers["id"] + ".wav"
-        with open(path, "wb") as file:
+        full_path = get_path_to_user_info('Cache' if is_cached else 'Data', response.headers["id"]+".wav")
+        with open(full_path, "wb") as file:
             for chunk in response.iter_bytes():
                 file.write(chunk)
 
-        full_path = get_path_to_user_info('Cache' if is_cached else 'Data', response.headers["id"]+".wav")
         return {"status": True, "path": full_path, "music_id": response.headers["id"]}
     except httpx.ConnectError:
         return {"status": False, "path": None, "music_id": None}
@@ -92,6 +96,11 @@ def delete_from_liked(music_id: str, user_id: str):
 
 
 def get_path_to_user_info(cached_or_data, music_id) -> Path:
+    global Is_InApp
+    if not Is_InApp:
+        parent_dir = os.path.dirname(CURRENT_DIR)
+        os.chdir(parent_dir)
+        Is_InApp = True
     path = str(
         Path(str(getcwd())) / 'Application' / cached_or_data / music_id
     )

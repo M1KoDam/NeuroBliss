@@ -8,6 +8,8 @@ from Server.Application.__init__ import get_users_repository, get_music_reposito
 router = APIRouter()
 users_rep = get_users_repository()
 music_rep = get_music_repository()
+global condition
+condition = True
 
 
 class MusicTransfer(BaseModel):
@@ -58,7 +60,19 @@ async def download_music_by_id(music_info: MusicInfo):
 
 @router.post('/music/get_music_by_id')
 async def get_music_by_id(music_info: MusicInfo):
-    music_item = music_rep.get_music_by_id(music_info.music_id)
+    temp1 = "ece5415a-46b4-4dcf-9f86-6befebfdcf5c"
+    temp2 = "9c66043b-b06b-481f-822e-fdd1272523dc"
+    global condition
+
+    if condition:
+        condition = False
+        selected_option = temp1
+
+    else:
+        selected_option = temp2
+        condition = True
+    print(selected_option)
+    music_item = music_rep.get_music_by_id(selected_option)
     file_path = music_item.path + music_item.id + ".wav"
     return FileResponse(file_path, filename=music_item.id, headers={"id": f"{music_item.id}",
                                                                     "music_length": f"{music_item.length_in_seconds}"
