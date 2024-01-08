@@ -33,13 +33,13 @@ class MoodGrid(ft.Column, metaclass=Singleton):
             controls=[
                 ft.Row(
                     controls=[
-                        GenreButton('Angry'), GenreButton('Happy'), GenreButton('Dark'), GenreButton('Sentimental')
+                        GenreButton('Happy', is_active=True), GenreButton('Calm'), GenreButton('Romantic')
                     ],
                     spacing=37
                 ),
                 ft.Row(
                     controls=[
-                        GenreButton('Romantic'), GenreButton('Sad'), GenreButton('Dreamy'), GenreButton('My steroid')
+                        GenreButton('Sad'), GenreButton('Aggressive'), GenreButton('Motivating')
                     ],
                     spacing=37
                 )

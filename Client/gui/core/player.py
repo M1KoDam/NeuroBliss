@@ -13,71 +13,80 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
         # self.existing_index = 0
         # self.existing_playlist: list[Track] = []
 
-        self.generation_index = 0
+        self.cur_generation_index = None
         self.generation_playlist: list[Track] = []
 
         EVENT_HANDLER.subscribe(self, EventType.OnPlayChanged)
 
-    def play_from_generation(self, data_manager: DataManager) -> None:
-        if data_manager.play == PlayState.PauseFromGeneration:
-            data_manager.play = PlayState.PlayFromGeneration
-        if self.generation_index == len(self.generation_playlist):
-            is_success, path, music_id = Sender.try_send_get_music_generation_request(
-                data_manager.user.Id, data_manager.genre
+    def generate_new(self, data_manager: DataManager) -> None:
+        is_success, path, music_id = Sender.try_send_get_music_generation_request(
+            data_manager.user.Id, data_manager.genre
+        )
+        if is_success:
+            audio = MyAudio(
+                path=path,
+                check_state=self.check_state
             )
-            if is_success:
-                audio = MyAudio(
-                    path=path,
-                    check_state=self.check_state
-                )
-                track = Track(Name=music_id, Path=path, Audio=audio)
-                self.generation_playlist.append(Track(Name=music_id, Path=path, Audio=audio))
-                data_manager.track = self.generation_playlist[self.generation_index]
-                self.page.overlay.append(audio)
-                self.page.update()
-                data_manager.track = track
-            else:
-                data_manager.play = PlayState.PauseFromGeneration
-        else:
-            self.generation_playlist[self.generation_index].Audio.resume()
-            data_manager.track = self.generation_playlist[self.generation_index]
+            self.cur_generation_index = len(self.generation_playlist)
 
-    def pause_from_generation(self) -> None:
-        self.generation_playlist[self.generation_index].Audio.pause()
+            if 0 <= self.cur_generation_index - 1 <= len(self.generation_playlist):
+                self.generation_playlist[self.cur_generation_index - 1].Audio.pause()
+
+            track = Track(Name=music_id, Path=path, Audio=audio)
+            self.generation_playlist.append(Track(Name=music_id, Path=path, Audio=audio))
+            data_manager.track = track
+
+            self.page.overlay.append(audio)
+            self.page.update()
+        else:
+            data_manager.play = PlayState.PauseFromGeneration
 
     def check_state(self, e):
         if e.data == "completed":
             if DataManager().play == PlayState.PlayFromGeneration:
-                self.generation_index += 1
-                self.play_from_generation(DataManager())
+                self.play_next(DataManager())
             elif DataManager().play == PlayState.PlayFromExisting:
                 ...
 
-    def play_next(self):
-        data_manager = DataManager()
-
-        if data_manager.play == PlayState.PlayFromGeneration or data_manager.play == PlayState.PauseFromGeneration:
-            self.generation_index = min(self.generation_index + 1, len(self.generation_playlist))
-            if 0 <= self.generation_index - 1 < len(self.generation_playlist):
-                self.generation_playlist[self.generation_index - 1].Audio.pause()
-            self.play_from_generation(data_manager)
+    def play_from_generation(self, data_manager: DataManager) -> None:
+        if self.cur_generation_index is None:
+            self.play_next(data_manager)
         else:
-            ...
+            self.generation_playlist[self.cur_generation_index].Audio.resume()
+            data_manager.track = self.generation_playlist[self.cur_generation_index]
 
-    def play_previous(self):
-        data_manager = DataManager()
+    def pause_from_generation(self, data_manager: DataManager) -> None:
+        self.generation_playlist[self.cur_generation_index].Audio.pause()
 
-        if data_manager.play == PlayState.PlayFromGeneration or data_manager.play == PlayState.PauseFromGeneration:
-            if self.generation_index - 1 < 0 or self.generation_index == 0 and len(self.generation_playlist) == 0:
-                self.play_next()
-            else:
-                self.generation_index -= 1
-                if 0 <= self.generation_index + 1 < len(self.generation_playlist):
-                    self.generation_playlist[self.generation_index + 1].Audio.pause()
-                DataManager.track = self.generation_playlist[self.generation_index]
-                self.generation_playlist[self.generation_index].Audio.play()
+    def play_next(self, data_manager: DataManager):
+        if data_manager.play == PlayState.PauseFromGeneration:
+            data_manager.play = PlayState.PlayFromGeneration
+        if self.cur_generation_index is None or self.cur_generation_index == len(self.generation_playlist) - 1:
+            self.generate_new(data_manager)
         else:
-            ...
+            self.generation_playlist[self.cur_generation_index].Audio.pause()
+            self.cur_generation_index += 1
+            track = self.generation_playlist[self.cur_generation_index]
+            track.Audio.play()
+            data_manager.track = track
+
+        print(self.cur_generation_index, len(self.generation_playlist))
+
+    def play_previous(self, data_manager: DataManager):
+        if data_manager.play == PlayState.PlayFromGeneration or data_manager.play == PlayState.PauseFromGeneration:
+            data_manager.play = PlayState.PlayFromGeneration
+        if self.cur_generation_index is None or self.cur_generation_index == 0:
+            if self.cur_generation_index is not None:
+                self.generation_playlist[self.cur_generation_index].Audio.pause()
+            self.generate_new(data_manager)
+        else:
+            self.generation_playlist[self.cur_generation_index].Audio.pause()
+            self.cur_generation_index -= 1
+            track = self.generation_playlist[self.cur_generation_index]
+            track.Audio.play()
+            data_manager.track = track
+
+        print(self.cur_generation_index, len(self.generation_playlist))
 
     def notify(self, event: EventType, data_manager: DataManager):
         match data_manager.play:
@@ -86,6 +95,6 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
             case PlayState.PlayFromExisting:
                 ...
             case PlayState.PauseFromGeneration:
-                self.pause_from_generation()
+                self.pause_from_generation(data_manager)
             case PlayState.PauseFromExisting:
                 ...

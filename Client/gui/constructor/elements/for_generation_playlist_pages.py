@@ -83,15 +83,19 @@ class PlaylistButton(IconButton, EventCaller, EventDependent, metaclass=Singleto
 
 
 class GenreButton(ft.ElevatedButton, EventCaller, EventDependent):
-    def __init__(self, name):
+    def __init__(self, name: str, is_active: bool = False):
         self.genre_name = name
-        self.is_active: bool = name == DATA_MANAGER.genre
+        self.is_active: bool = is_active
+        text_color = colors.BLUE if is_active else colors.WHITE
+
+        if is_active:
+            DATA_MANAGER.genre = name
 
         EVENT_HANDLER.subscribe(self, EventType.OnGenresChanged)
 
         super().__init__(
             content=ft.Row(
-                controls=[ft.Text(value=name, color=ft.colors.WHITE, size=15, expand=True)],
+                controls=[ft.Text(value=name, color=text_color, size=15, expand=True)],
                 alignment=ft.MainAxisAlignment.START
             ),
             bgcolor=colors.GREY, width=110, height=48,
@@ -200,7 +204,7 @@ class PreviousTrackButton(IconButton):
         super().__init__(icon=Icon.previous_track, on_click=lambda e: self.on_active())
 
     def on_active(self):
-        PlayerSolver(None).play_previous()
+        PlayerSolver(None).play_previous(DataManager())
 
 
 class NextTrackButton(IconButton):
@@ -208,7 +212,7 @@ class NextTrackButton(IconButton):
         super().__init__(icon=Icon.next_track, on_click=lambda e: self.on_active())
 
     def on_active(self):
-        PlayerSolver(None).play_next()
+        PlayerSolver(None).play_next(DataManager())
 
 
 class LikeButton(IconButton):
