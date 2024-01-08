@@ -8,8 +8,7 @@ from .elements.for_account_pages import \
     UserAvatar, UserName, SearchButton, SettingsButton, SmallGenerationButton, \
     SmallPlaylistButton, SearchRow, SettingsColumn
 from .elements.for_registrate import RegistrateColumn
-from .elements.base import UploadButton
-from typing import Callable
+from .elements.base import UploadButton, SingInButton
 import flet as ft
 
 
@@ -192,9 +191,8 @@ class Dialog(ft.AlertDialog, metaclass=Singleton):
             title=ft.Text("Welcome!"),
             content=RegistrateArea(),
             actions=[
-                UploadButton(
-                    label='Sign up', width=74, on_close=self.on_close
-                )
+                SingInButton(on_close=self.on_close),
+                UploadButton(label='Sign up', width=74, on_close=self.on_close)
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
@@ -208,7 +206,7 @@ class Dialog(ft.AlertDialog, metaclass=Singleton):
 class ServerUnreachableBanner(ft.Banner, EventSolver, metaclass=Singleton):
     def __init__(self, page: ft.Page):
         self.page = page
-        page.overlay.append(self)
+        page.banner = self
 
         EVENT_HANDLER.subscribe(self, EventType.OnConnectionChanged)
 
