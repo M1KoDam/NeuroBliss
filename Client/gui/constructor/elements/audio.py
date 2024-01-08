@@ -19,6 +19,7 @@ class MyAudio(ft.Audio, EventDependent):
 
     def notify(self, event: EventType, data_manager: DataManager) -> None:
         if event == EventType.OnVolumeChanged:
-            self.volume = data_manager.volume
+            self.volume = data_manager.volume / 100
+            self.update()
         elif event == EventType.OnPositionBySliderChanged:
             self.seek(self.get_duration() * data_manager.position_ratio)

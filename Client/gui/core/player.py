@@ -56,7 +56,8 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
             data_manager.track = self.generation_playlist[self.cur_generation_index]
 
     def pause_from_generation(self, data_manager: DataManager) -> None:
-        self.generation_playlist[self.cur_generation_index].Audio.pause()
+        if self.cur_generation_index is not None:
+            self.generation_playlist[self.cur_generation_index].Audio.pause()
 
     def play_next(self, data_manager: DataManager):
         if data_manager.play == PlayState.PauseFromGeneration:

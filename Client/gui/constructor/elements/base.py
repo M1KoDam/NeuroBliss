@@ -109,7 +109,7 @@ class UploadButton(ft.ElevatedButton, EventCaller):
         if not avatar_color:
             avatar_color = DATA_MANAGER.user.AvatarColor
 
-        user_id = None
+        user_id = DATA_MANAGER.user.Id
         if self.on_close is not None:
             if need_to_close:
                 is_success, user_id = Sender.try_make_registration_request(login, password)
