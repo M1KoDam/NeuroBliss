@@ -11,7 +11,8 @@ class EventType(Enum):
     OnPageChanged = 4
     OnUserChanged = 5
     OnConnectionChanged = 6
-    OnPositionChanged = 7
+    OnPositionBySliderChanged = 7
+    OnPositionChanged = 8
 
 
 class OnClickHandle(Protocol):
@@ -23,7 +24,7 @@ class OnClickHandle(Protocol):
 class EventSolver:
     """Event solver can't be the cause of the event, but should solve it"""
 
-    def notify(self, data_manager: 'DataManager') -> None:
+    def notify(self, event: EventType, data_manager: 'DataManager') -> None:
         """Describes how to solve event"""
         ...
 
@@ -44,7 +45,7 @@ class EventDependent:
         """Sets internal arguments to those given in 'args'. Changes its visual appearance"""
         ...
 
-    def notify(self, data_manager: 'DataManager') -> None:
+    def notify(self, event: EventType, data_manager: 'DataManager') -> None:
         """Describes what to do when this object is notified that it needs to change according to application data"""
         ...
 
@@ -116,6 +117,19 @@ class DataManager(metaclass=Singleton):
         self.app_data.Connection = new_connection
         self.raise_event(EventType.OnConnectionChanged)
 
+    @property
+    def position_ratio(self) -> float:
+        audio = self.app_data.Track.Audio
+        return audio.get_current_position() / audio.get_duration()
+
+    @position_ratio.setter
+    def position_ratio(self, new_ratio: float) -> None:
+        if not (0 <= new_ratio <= 1):
+            raise ValueError
+        audio = self.app_data.Track.Audio
+        new_position = audio.get_duration() * new_ratio
+        audio.seek(int(new_position))
+
     @staticmethod
     def raise_event(event_type: EventType) -> None:
         EVENT_HANDLER.handle_event(event_type)
@@ -137,11 +151,11 @@ class EventHandler(metaclass=Singleton):
     def handle_event(self, current_event: EventType) -> None:
         for event, solver in self.solvers:
             if current_event == event:
-                solver.notify(DATA_MANAGER)
+                solver.notify(current_event, DATA_MANAGER)
 
         for event, dependent in self.dependents:
             if current_event == event:
-                dependent.notify(DATA_MANAGER)
+                dependent.notify(current_event, DATA_MANAGER)
 
 
 EVENT_HANDLER = EventHandler()

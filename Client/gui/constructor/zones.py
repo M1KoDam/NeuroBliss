@@ -3,7 +3,7 @@ from ..core.data import ConnectionType, Singleton
 from ..core.event import EventSolver, EVENT_HANDLER, EventType, DataManager
 from .elements.for_generation_playlist_pages import \
     GenreButton, PlayButton, PlaylistButton, PlayButtonType, PreviousTrackButton, \
-    NextTrackButton, LikeButton, ShareButton, VolumeButton, VolumeSlider, AccountButton
+    NextTrackButton, LikeButton, ShareButton, VolumeButton, VolumeSlider, AccountButton, TrackPositionSlider
 from .elements.for_account_pages import \
     UserAvatar, UserName, SearchButton, SettingsButton, SmallGenerationButton, \
     SmallPlaylistButton, SearchRow, SettingsColumn
@@ -85,8 +85,8 @@ class BottomBar(ft.Row, metaclass=Singleton):
         super().__init__(
             controls=[
                 PreviousTrackButton(), PlayButton(PlayButtonType.Small), NextTrackButton(),
-                ft.Slider(min=0, max=100, expand=True, active_color=colors.BLUE, inactive_color=colors.GREY),
-                LikeButton(), ShareButton(), ft.Row(controls=[VolumeButton(), VolumeSlider()], spacing=0)
+                TrackPositionSlider(), LikeButton(), ShareButton(),
+                ft.Row(controls=[VolumeButton(), VolumeSlider()], spacing=0)
             ],
             spacing=24,
             height=50,
@@ -226,7 +226,7 @@ class ServerUnreachableBanner(ft.Banner, EventSolver, metaclass=Singleton):
             ]
         )
 
-    def notify(self, data_manager: DataManager) -> None:
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
         if data_manager.connection == ConnectionType.Offline:
             self.invoke()
 

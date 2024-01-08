@@ -1,5 +1,6 @@
 from .data import User, AppData, PlayState, Singleton
 from .event import ConnectionType, EventSolver, EVENT_HANDLER, DataManager, EventType
+from ..constructor.elements.audio import MyAudio
 from .data import Track
 from .request import Sender
 import flet as ft
@@ -41,13 +42,9 @@ class PlayTrackSolver(EventSolver, metaclass=Singleton):
                 data_manager.user.Id, data_manager.genre
             )
             if is_success:
-                audio = ft.Audio(
-                    src=path,
-                    autoplay=True,
-                    volume=data_manager.volume / 100,
-                    balance=0,
-                    on_position_changed=lambda e: data_manager.raise_event(EventType.OnPositionChanged),
-                    on_state_changed=self.check_state
+                audio = MyAudio(
+                    path=path,
+                    check_state=self.check_state
                 )
                 track = Track(Name=music_id, Path=path, Audio=audio)
                 self.generation_playlist.append(Track(Name=music_id, Path=path, Audio=audio))
@@ -67,11 +64,12 @@ class PlayTrackSolver(EventSolver, metaclass=Singleton):
     def check_state(self, e):
         if e.data == "completed":
             if DataManager().play == PlayState.PlayFromGeneration:
+                self.generation_index += 1
                 self.play_from_generation(DataManager())
             elif DataManager().play == PlayState.PlayFromExisting:
                 ...
 
-    def notify(self, data_manager: DataManager):
+    def notify(self, event: EventType, data_manager: DataManager):
         match data_manager.play:
             case PlayState.PlayFromGeneration:
                 self.play_from_generation(data_manager)

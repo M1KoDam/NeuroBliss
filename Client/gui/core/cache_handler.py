@@ -8,7 +8,7 @@ class CacheHandler(EventSolver, metaclass=Singleton):
     def __init__(self):
         EVENT_HANDLER.subscribe(self, EventType.OnUserChanged)
 
-    def notify(self, data_manager: DataManager):
+    def notify(self, event: EventType, data_manager: DataManager):
         if data_manager.connection is ConnectionType.Online:
             self.write_to_cache(data_manager.app_data)
 
@@ -50,5 +50,9 @@ class CacheHandler(EventSolver, metaclass=Singleton):
         path = str(
             Path(str(getcwd())) / 'core' / 'cache' / 'user-info.txt'
         )
-        print(path)
+        if 'gui' not in path:
+            path = str(
+                Path(str(getcwd())) / 'gui' / 'core' / 'cache' / 'user-info.txt'
+            )
+
         return Path(path)

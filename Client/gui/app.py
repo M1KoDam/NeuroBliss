@@ -89,7 +89,7 @@ class Router(EventSolver, metaclass=Singleton):
         self.view.update()
         self.page.update()
 
-    def notify(self, data_manager: DataManager) -> None:
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
         self.go(data_manager.page)
 
 

@@ -7,6 +7,7 @@ from ...constructor.icons import Icon
 from .states import VolumeStates, VolumeIconState
 from .base import IconButton
 from enum import Enum
+from typing import Callable, Any
 import flet as ft
 
 
@@ -37,7 +38,7 @@ class AccountButton(ft.ElevatedButton, EventCaller, EventDependent, metaclass=Si
         if DATA_MANAGER.page in PAGES:
             self.update()
 
-    def notify(self, data_manager: DataManager) -> None:
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
         self.change_visual(data_manager.user)
 
 
@@ -69,7 +70,7 @@ class PlaylistButton(IconButton, EventCaller, EventDependent, metaclass=Singleto
         if DATA_MANAGER.page in PAGES:
             self.update()
 
-    def notify(self, data_manager: DataManager) -> None:
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
         match data_manager.page:
             case PageState.Playlist:
                 is_active = True
@@ -124,7 +125,7 @@ class GenreButton(ft.ElevatedButton, EventCaller, EventDependent):
         if DATA_MANAGER.page == PageState.Generation:
             button_text_area.update()
 
-    def notify(self, data_manager: DataManager) -> None:
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
         active_genres = data_manager.genre
         if self.genre_name in active_genres:
             self.change_visual(is_active=True)
@@ -175,9 +176,7 @@ class PlayButton(IconButton, EventCaller, EventDependent):
             content[0] = Icon.small_pause if self.is_active else Icon.small_play
             self.update()
 
-    def notify(self, data_manager: DataManager) -> None:
-        play_state = data_manager.play
-
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
         if self.button_type == PlayButtonType.Big:
             match data_manager.play:
                 case PlayState.PlayFromGeneration:
@@ -250,7 +249,7 @@ class VolumeButton(IconButton, EventCaller, EventDependent, metaclass=Singleton)
 
         self.update()
 
-    def notify(self, data_manager: DataManager) -> None:
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
         self.change_visual(data_manager.volume)
 
 
@@ -273,7 +272,7 @@ class VolumeSlider(ft.Slider, EventCaller, EventDependent, metaclass=Singleton):
         self.value = volume
         self.update()
 
-    def notify(self, data_manager: DataManager) -> None:
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
         self.change_visual(data_manager.volume)
 
 
@@ -283,3 +282,27 @@ class ShareButton(IconButton):
 
     def on_change(self):
         print(type(self).__name__)
+
+
+class TrackPositionSlider(ft.Slider, EventCaller, EventDependent, metaclass=Singleton):
+    def __init__(self):
+        EVENT_HANDLER.subscribe(self, EventType.OnPositionChanged)
+
+        super().__init__(
+            min=0, max=100,
+            expand=True,
+            active_color=colors.BLUE, inactive_color=colors.GREY,
+            on_change=lambda e: self.on_active()
+        )
+
+    def on_active(self) -> None:
+        ratio = self.value / self.max
+        DATA_MANAGER.position_ratio = ratio
+
+    def change_visual(self, value: float) -> None:
+        self.value = value
+        self.update()
+
+    def notify(self, event: EventType, data_manager: DataManager) -> None:
+        value = data_manager.position_ratio * self.max
+        self.change_visual(value)
