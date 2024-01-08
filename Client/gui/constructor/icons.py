@@ -24,11 +24,21 @@ class Icon:
 
     repeat = Image(src='icons/repeat.png', width=16, height=16)
 
-    like = Image(src='icons/like.png', width=24, height=24)
-    filled_like = Image(src='icons/filled_like.png', width=24, height=24)
+    @property
+    def like(self) -> Image:
+        return Image(src='icons/like.png', width=24, height=24)
 
-    share = Image(src='icons/share.png', width=24, height=24)
+    @property
+    def filled_like(self) -> Image:
+        return Image(src='icons/filled_like.png', width=24, height=24)
+
+    @property
+    def share(self) -> Image:
+        return Image(src='icons/share.png', width=24, height=24)
 
     min_volume = Image(src='icons/min_volume.png', width=24, height=24)
     medium_volume = Image(src='icons/medium_volume.png', width=24, height=24)
     max_volume = Image(src='icons/max_volume.png', width=24, height=24)
+
+
+ICON = Icon()

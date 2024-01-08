@@ -3,11 +3,12 @@ from ...core.data import User, Singleton, Track
 from ...core.event import \
     EventType, PageState, EventDependent, EventCaller, \
     DATA_MANAGER, DataManager, EVENT_HANDLER, PlayState, EventSolver
-from ...constructor.icons import Icon
+from ...constructor.icons import Icon, ICON
 from ...core.player import PlayerSolver
 from .states import VolumeStates, VolumeIconState
 from .base import IconButton
 from enum import Enum
+from typing import Callable
 import flet as ft
 
 PAGES = [PageState.Generation, PageState.Playlist]
@@ -217,7 +218,7 @@ class NextTrackButton(IconButton):
 class LikeButton(ft.IconButton, EventDependent, EventCaller, EventSolver):
     def __init__(self, is_active=False):
         self.is_active = is_active
-        icon = Icon.filled_like if self.is_active else Icon.like
+        icon = ICON.filled_like if self.is_active else ICON.like
 
         EVENT_HANDLER.subscribe(self, EventType.OnLibraryChanged)
         EVENT_HANDLER.subscribe(self, EventType.OnTrackChanged)
@@ -239,7 +240,7 @@ class LikeButton(ft.IconButton, EventDependent, EventCaller, EventSolver):
         self.is_active = is_active
 
         content = self.content.controls
-        content[0] = Icon.filled_like if self.is_active else Icon.like
+        content[0] = ICON.filled_like if self.is_active else ICON.like
 
         self.update()
 
@@ -303,7 +304,7 @@ class VolumeSlider(ft.Slider, EventCaller, EventDependent, metaclass=Singleton):
 
 class ShareButton(IconButton):
     def __init__(self):
-        super().__init__(icon=Icon.share, on_click=lambda e: self.on_change())
+        super().__init__(icon=ICON.share, on_click=lambda e: self.on_change())
 
     def on_change(self):
         print(type(self).__name__)
@@ -333,6 +334,15 @@ class TrackPositionSlider(ft.Slider, EventCaller, EventDependent, metaclass=Sing
         self.change_visual(value)
 
 
+class LikeTrackItemButton(ft.IconButton, EventCaller):
+    def __init__(self, on_active: Callable[[], None]):
+        icon = ICON.filled_like
+
+        super().__init__(
+            content=ft.Row(controls=[icon]),
+            on_click=lambda e: on_active())
+
+
 class TrackItem(ft.OutlinedButton):
     def __init__(self, track: Track):
         self.track = track
@@ -343,8 +353,7 @@ class TrackItem(ft.OutlinedButton):
                     ft.Text(
                         value=track.Name, color=ft.colors.WHITE, size=15, font_family='inter-regular', height=20,
                         text_align=ft.TextAlign.CENTER),
-                    # ft.Row(controls=[ShareButton()], spacing=10)
-                    # ft.Row(controls=[ShareButton(), LikeButton(is_active=True)], spacing=10)
+                    ft.Row(controls=[ShareButton(), LikeTrackItemButton(on_active=self.on_unlike)], spacing=10)
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
             height=58,
@@ -359,29 +368,8 @@ class TrackItem(ft.OutlinedButton):
             )
         )
 
+    def on_unlike(self):
+        DATA_MANAGER.remove_from_library(self.track)
+
     def on_active(self) -> None:
         ...
-        # is_active = not self.is_active
-        #
-        # if is_active:
-        #     DATA_MANAGER.genre = self.genre_name
-
-    def change_visual(self, is_active: bool) -> None:
-        print(type(self).__name__)
-
-        if self.is_active == is_active:
-            return
-
-        self.is_active = is_active
-        button_text_area = self.content.controls[0]
-        button_text_area.color = colors.BLUE if self.is_active else colors.WHITE
-
-        if DATA_MANAGER.page == PageState.Generation:
-            button_text_area.update()
-
-    def notify(self, event: EventType, data_manager: DataManager) -> None:
-        active_genres = data_manager.genre
-        if self.genre_name in active_genres:
-            self.change_visual(is_active=True)
-        else:
-            self.change_visual(is_active=False)
