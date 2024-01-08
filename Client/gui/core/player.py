@@ -50,6 +50,8 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
                 self.play_next(DataManager())
 
     def play_from_generation(self, data_manager: DataManager) -> None:
+        self.stop_all()
+
         if self.cur_generation_index is None:
             self.play_next(data_manager)
         else:
@@ -57,8 +59,7 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
             data_manager.track = self.generation_playlist[self.cur_generation_index]
 
     def play_from_existing(self, data_manager: DataManager) -> None:
-        if self.cur_existing_index is not None:
-            self.existing_playlist[self.cur_existing_index].Audio.pause()
+        self.stop_all()
 
         for i in range(len(self.existing_playlist)):
             if self.existing_playlist[i] == data_manager.track:
@@ -78,6 +79,7 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
             self.existing_playlist[self.cur_existing_index].Audio.pause()
 
     def play_next(self, data_manager: DataManager):
+        self.stop_all()
         if data_manager.play == PlayState.PlayFromGeneration or data_manager.play == PlayState.PauseFromGeneration:
             if data_manager.play == PlayState.PauseFromGeneration:
                 data_manager.play = PlayState.PlayFromGeneration
@@ -105,6 +107,7 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
             data_manager.track = track
 
     def play_previous(self, data_manager: DataManager):
+        self.stop_all()
         if data_manager.play == PlayState.PlayFromGeneration or data_manager.play == PlayState.PauseFromGeneration:
             if data_manager.play == PlayState.PlayFromGeneration or data_manager.play == PlayState.PauseFromGeneration:
                 data_manager.play = PlayState.PlayFromGeneration
@@ -132,6 +135,12 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
             track = self.existing_playlist[self.cur_existing_index]
             track.Audio.play()
             data_manager.track = track
+
+    def stop_all(self) -> None:
+        for i in range(len(self.existing_playlist)):
+            self.existing_playlist[i].Audio.pause()
+        for i in range(len(self.generation_playlist)):
+            self.generation_playlist[i].Audio.pause()
 
     def notify(self, event: EventType, data_manager: DataManager):
         if event == EventType.OnPlayChanged:
