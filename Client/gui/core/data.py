@@ -1,6 +1,7 @@
 from ..resources import colors
 from dataclasses import dataclass
 from enum import Enum
+import flet as ft
 
 
 class Singleton(type):
@@ -29,6 +30,7 @@ class PlayState(Enum):
 class Track:
     Name: str = None
     Path: str = None
+    Audio: ft.Audio = None
 
 
 @dataclass
@@ -72,7 +74,7 @@ class AppData(metaclass=Singleton):
     Track: Track = None
     Page: PageState = PageState.Generation
     ActiveGenre: str = None
-    Volume: int = 100
+    Volume: float = 100
     User: User = User()
 
     def __str__(self) -> str:

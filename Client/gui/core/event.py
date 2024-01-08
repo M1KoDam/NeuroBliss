@@ -11,6 +11,7 @@ class EventType(Enum):
     OnPageChanged = 4
     OnUserChanged = 5
     OnConnectionChanged = 6
+    OnPositionChanged = 7
 
 
 class OnClickHandle(Protocol):
@@ -71,11 +72,11 @@ class DataManager(metaclass=Singleton):
         self.raise_event(EventType.OnTrackChanged)
 
     @property
-    def volume(self) -> int:
+    def volume(self) -> float:
         return self.app_data.Volume
 
     @volume.setter
-    def volume(self, new_volume: int) -> None:
+    def volume(self, new_volume: float) -> None:
         self.app_data.Volume = new_volume
         self.raise_event(EventType.OnVolumeChanged)
 

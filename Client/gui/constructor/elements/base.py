@@ -6,8 +6,6 @@ from ...constructor.icons import Icon
 from .color_picker import ColorPicker
 from typing import Callable
 import flet as ft
-from Client.Application.client_api import register_user
-import httpx
 
 
 class IconButton(ft.IconButton):
@@ -115,6 +113,85 @@ class UploadButton(ft.ElevatedButton, EventCaller):
         if self.on_close is not None:
             if need_to_close:
                 is_success, user_id = Sender.try_make_registration_request(login, password)
+                if is_success is False:
+                    LoginField().error_text = "such user already exist"
+                    LoginField().update()
+                    PasswordField().error_text = "such user already exist"
+                    PasswordField().update()
+                    need_to_close = False
+
+            self.on_close(need_to_close)
+
+        if need_to_close:
+            LoginField().error_text = ""
+            LoginField().update()
+            PasswordField().error_text = ""
+            PasswordField().update()
+            if DATA_MANAGER.connection == ConnectionType.Online:
+                DATA_MANAGER.user = User(
+                    Login=login, Password=password, AvatarColor=avatar_color,
+                    OriginalLogin=login, OriginalPassword=password, Id=user_id
+                )
+            else:
+                DATA_MANAGER.user = User(
+                    Login=login, Password=password, AvatarColor=avatar_color,
+                    OriginalLogin=None, OriginalPassword=None, Id=None
+                )
+
+
+class SingInButton(ft.ElevatedButton, EventCaller):
+    def __init__(
+        self,
+        on_close: Callable[[bool], None] = None,
+    ):
+        self.on_close = on_close
+
+        super().__init__(
+            content=ft.Row(
+                controls=[ft.Text(value='Sing in', color=ft.colors.WHITE, size=15, expand=True)],
+                alignment=ft.MainAxisAlignment.START
+            ),
+            bgcolor=colors.GREY, width=74, height=40,
+            on_click=lambda e: self.on_active(),
+            style=ft.ButtonStyle(
+                animation_duration=500,
+                padding={ft.MaterialState.PRESSED: 10},
+                shape={
+                    ft.MaterialState.HOVERED: ft.RoundedRectangleBorder(radius=12),
+                    ft.MaterialState.DEFAULT: ft.RoundedRectangleBorder(radius=8)
+                }
+            )
+        )
+
+    def on_active(self) -> None:
+        need_to_close = True
+
+        login = LoginField().value
+        if not login:
+            LoginField().error_text = "login cannot be blank"
+            LoginField().update()
+            need_to_close = False
+
+        password = PasswordField().value
+        if not password:
+            PasswordField().error_text = "password cannot be blank"
+            PasswordField().update()
+            need_to_close = False
+
+        avatar_color = CustomColorPicker().color
+        if not avatar_color:
+            avatar_color = DATA_MANAGER.user.AvatarColor
+
+        user_id = None
+        if self.on_close is not None:
+            if need_to_close:
+                is_success, user_id = Sender.try_make_sing_in_request(login, password)
+                if is_success is False:
+                    LoginField().error_text = "such user doesn't exist"
+                    LoginField().update()
+                    PasswordField().error_text = "such user doesn't exist"
+                    PasswordField().update()
+                    need_to_close = False
 
             self.on_close(need_to_close)
 
