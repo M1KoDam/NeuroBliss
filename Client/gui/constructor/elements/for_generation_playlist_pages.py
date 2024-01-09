@@ -116,6 +116,8 @@ class GenreButton(ft.ElevatedButton, EventCaller, EventDependent):
         if is_active:
             DATA_MANAGER.genre = self.genre_name
             DATA_MANAGER.play = PlayState.PlayFromGeneration
+            player = PlayerSolver(None)
+            player.cur_generation_index = len(player.generation_playlist) - 1
             PlayerSolver(None).play_next(DATA_MANAGER)
 
     def change_visual(self, is_active: bool) -> None:
