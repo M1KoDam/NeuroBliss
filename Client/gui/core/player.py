@@ -161,3 +161,7 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
                     self.pause_from_existing()
         elif event == EventType.OnLibraryChanged:
             self.existing_playlist = list(data_manager.library)
+            self.cur_existing_index = max(min(len(self.existing_playlist) - 1, self.cur_generation_index - 1), 0)
+            if len(self.existing_playlist) == 0:
+                self.cur_existing_index = None
+                data_manager.play = PlayState.PlayFromGeneration

@@ -398,7 +398,7 @@ class TrackItem(ft.OutlinedButton, EventDependent):
 
         text = self.content.controls[0]
         text.color = color
-        if DATA_MANAGER.page == PageState.Playlist:
+        if DATA_MANAGER.page == PageState.Playlist and self.track in DATA_MANAGER.library:
             text.update()
 
     def notify(self, event: EventType, data_manager: 'DataManager') -> None:
