@@ -115,6 +115,8 @@ class GenreButton(ft.ElevatedButton, EventCaller, EventDependent):
 
         if is_active:
             DATA_MANAGER.genre = self.genre_name
+            DATA_MANAGER.play = PlayState.PlayFromGeneration
+            PlayerSolver(None).play_next(DATA_MANAGER)
 
     def change_visual(self, is_active: bool) -> None:
         print(type(self).__name__)
@@ -343,15 +345,18 @@ class LikeTrackItemButton(ft.IconButton, EventCaller):
             on_click=lambda e: on_active())
 
 
-class TrackItem(ft.OutlinedButton):
+class TrackItem(ft.OutlinedButton, EventDependent):
     def __init__(self, track: Track):
         self.track = track
+        self.is_active = True
+
+        EVENT_HANDLER.subscribe(self, EventType.OnTrackChanged)
 
         super().__init__(
             content=ft.Row(
                 controls=[
                     ft.Text(
-                        value=track.Name, color=ft.colors.WHITE, size=15, font_family='inter-regular', height=20,
+                        value=track.Name, color=colors.BLUE, size=15, font_family='inter-regular', height=20,
                         text_align=ft.TextAlign.CENTER),
                     ft.Row(controls=[ShareButton(), LikeTrackItemButton(on_active=self.on_unlike)], spacing=10)
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -385,3 +390,17 @@ class TrackItem(ft.OutlinedButton):
         else:
             DATA_MANAGER.track = self.track
             DATA_MANAGER.play = PlayState.PlayFromExisting
+
+    def change_visual(self, is_active: bool) -> None:
+        color = colors.BLUE if is_active else colors.WHITE
+
+        text = self.content.controls[0]
+        text.color = color
+        if DATA_MANAGER.page == PageState.Playlist:
+            text.update()
+
+    def notify(self, event: EventType, data_manager: 'DataManager') -> None:
+        if data_manager.track == self.track:
+            self.change_visual(is_active=True)
+        else:
+            self.change_visual(is_active=False)

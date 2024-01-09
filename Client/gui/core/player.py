@@ -70,13 +70,15 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
         else:
             self.existing_playlist[self.cur_existing_index].Audio.resume()
 
-    def pause_from_generation(self, data_manager: DataManager) -> None:
-        if self.cur_generation_index is not None:
-            self.generation_playlist[self.cur_generation_index].Audio.pause()
+    def pause_from_generation(self) -> None:
+        # if self.cur_generation_index is not None:
+        #     self.generation_playlist[self.cur_generation_index].Audio.pause()
+        self.stop_all()
 
-    def pause_from_existing(self, data_manager: DataManager) -> None:
-        if self.cur_existing_index is not None:
-            self.existing_playlist[self.cur_existing_index].Audio.pause()
+    def pause_from_existing(self) -> None:
+        # if self.cur_existing_index is not None:
+        #     self.existing_playlist[self.cur_existing_index].Audio.pause()
+        self.stop_all()
 
     def play_next(self, data_manager: DataManager):
         self.stop_all()
@@ -89,6 +91,7 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
                 self.generation_playlist[self.cur_generation_index].Audio.pause()
                 self.cur_generation_index += 1
                 track = self.generation_playlist[self.cur_generation_index]
+                track.Audio.seek(0)
                 track.Audio.play()
                 data_manager.track = track
         elif data_manager.play == PlayState.PlayFromExisting or data_manager.play == PlayState.PauseFromExisting:
@@ -103,6 +106,7 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
                 self.cur_existing_index += 1
 
             track = self.existing_playlist[self.cur_existing_index]
+            track.Audio.seek(0)
             track.Audio.play()
             data_manager.track = track
 
@@ -119,6 +123,7 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
                 self.generation_playlist[self.cur_generation_index].Audio.pause()
                 self.cur_generation_index -= 1
                 track = self.generation_playlist[self.cur_generation_index]
+                track.Audio.seek(0)
                 track.Audio.play()
                 data_manager.track = track
         elif data_manager.play == PlayState.PlayFromExisting or data_manager.play == PlayState.PauseFromExisting:
@@ -133,6 +138,7 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
                 self.cur_existing_index -= 1
 
             track = self.existing_playlist[self.cur_existing_index]
+            track.Audio.seek(0)
             track.Audio.play()
             data_manager.track = track
 
@@ -150,8 +156,8 @@ class PlayerSolver(EventSolver, metaclass=Singleton):
                 case PlayState.PlayFromExisting:
                     self.play_from_existing(data_manager)
                 case PlayState.PauseFromGeneration:
-                    self.pause_from_generation(data_manager)
+                    self.pause_from_generation()
                 case PlayState.PauseFromExisting:
-                    self.pause_from_existing(data_manager)
+                    self.pause_from_existing()
         elif event == EventType.OnLibraryChanged:
             self.existing_playlist = list(data_manager.library)
